@@ -16,6 +16,7 @@ import AugurCards from '../components/AugurCards.vue'
 import MainControls from '../components/MainControls.vue'
 import AugurHeader from '../components/AugurHeader.vue'
 import Tabs from '../components/Tabs.vue'
+import riskTabs from '../components/riskTabs.vue'
 import TableView from '../components/TableView.vue'
 
 let routes = [
@@ -35,6 +36,20 @@ let routes = [
       {path: '/metrics_status', 
         component: MetricsStatusCard
       }, 
+      {
+        path: '/research/:owner?/:repo',
+        component: AugurCards,
+        children: [
+          {
+            path: "",
+            name: "risk",
+            components: {
+              tabs: riskTabs,
+              content: RiskCard
+            }
+          },
+        ]
+      },
       {path: '/single/:owner?/:repo', name: 'single', props: true, canReuse: false, component: AugurCards,
         children: [
           {
