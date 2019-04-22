@@ -198,15 +198,16 @@ function Augur() {
       gitRepo: null,
       comparedRepos: [],
       trailingAverage: 180,
-      startDate: new Date('1 February 2011'),
+      startDate: new Date('1 January 2011'),
       endDate: new Date(),
-      compare: 'rolling',
+      compare: 'zscore',
       showBelowAverage: false,
       rawWeekly: false,
       showArea: true,
       showDetail: true,
       showTooltip: true,
-      byDate: false
+      byDate: false,
+      licenseRunning: "Scanning..."
     },
     mutations: {
       setGitRepo: function setGitRepo(state, payload) {
@@ -221,7 +222,9 @@ function Augur() {
         }
       },
       setRepo: function setRepo(state, payload) {
+        console.log("js", payload);
         var repo = window.AugurAPI.Repo(payload);
+        console.log(repo);
         if (!window.AugurRepos[repo.toString()]) {
           window.AugurRepos[repo.toString()] = repo;
         } else {
@@ -250,44 +253,24 @@ function Augur() {
         state.compare = 'zscore';
         state.hasState = true;
         var repo = window.AugurAPI.Repo(payload);
-        if (!state.comparedRepos.includes(repo.toString()) && state.baseRepo != repo.toString()) {
-          if (!window.AugurRepos[repo.toString()]) {
-            window.AugurRepos[repo.toString()] = repo;
-          } else {
-            repo = window.AugurRepos[repo.toString()];
-          }
-          state.hasState = true;
-          if (repo.owner && repo.name) {
-            state.comparedRepos.push(repo.toString());
-            var title = repo.owner + '/' + repo.name + '- Augur';
-          }
-          if (payload.gitURL) {
-            state.gitRepo = repo.gitURL;
-          }
-          if (state.comparedRepos.length == 1) {
-            if (!router.currentRoute.params.comparedrepo) {
-
-              var owner = state.gitRepo ? null : state.baseRepo.substring(0, state.baseRepo.indexOf('/'));
-              var _repo = state.gitRepo ? state.gitRepo : state.baseRepo.slice(state.baseRepo.indexOf('/') + 1);
-              var name = state.tab + "compare";
-              router.push({
-                name: name,
-                params: { owner: owner, repo: _repo, comparedowner: payload.owner, comparedrepo: payload.name }
-              });
-            }
-          } else {
-            var groupid = state.gitRepo ? String(state.gitRepo) + '+' : String(state.baseRepo) + "+";
-            state.comparedRepos.forEach(function (repo) {
-              groupid += String(repo) + '+';
-            });
-            var _name = state.tab + "group";
-            router.push({
-              name: _name,
-              params: {
-                groupid: groupid
-              }
-            });
-          }
+        if (!window.AugurRepos[repo.toString()]) {
+          window.AugurRepos[repo.toString()] = repo;
+        } else {
+          repo = window.AugurRepos[repo.toString()];
+        }
+        state.hasState = true;
+        if (repo.owner && repo.name) {
+          state.comparedRepos.push(repo.toString());
+          var title = repo.owner + '/' + repo.name + '- Augur';
+          state.tab = 'gmd';
+          var _queryString = window.location.search + '&comparedTo[]=' + repo.owner + '+' + repo.name;
+          window.history.pushState(null, title, _queryString);
+        }
+        if (payload.gitURL) {
+          var _queryString2 = '&git=' + window.btoa(repo.gitURL);
+          window.history.pushState(null, 'Git Analysis - Augur', window.location.search + _queryString2);
+          state.tab = 'git';
+          state.gitRepo = repo.gitURL;
         }
       },
       setDates: function setDates(state, payload) {
@@ -328,8 +311,9 @@ function Augur() {
       resetComparedRepos: function resetComparedRepos(state) {
         state.comparedRepos = [];
         router.push({
-          name: state.tab,
-          params: { owner: state.baseRepo.substring(0, state.baseRepo.indexOf('/')), repo: state.baseRepo.slice(state.baseRepo.indexOf('/') + 1) } });
+          name: 'single',
+          params: { tab: state.tab, domain: state.domain, owner: state.baseRepo.substring(0, state.baseRepo.indexOf('/')), repo: state.baseRepo.slice(state.baseRepo.indexOf('/') + 1) }
+        });
       },
       resetBaseRepo: function resetBaseRepo(state) {
         state.baseRepo = null;
@@ -355,64 +339,10 @@ function Augur() {
 
   AugurApp.store = window.augur;
 
-  router.beforeEach(function (to, from, next) {
-    if (to.params.repo || to.params.groupid) {
-      if (!to.params.groupid && !to.params.comparedrepo) {
-        AugurApp.store.commit("resetTab");
-        AugurApp.store.commit('setTab', {
-          tab: to.name
-        });
-        if (to.params.repo.includes('github') || to.params.repo.split(".").length > 2) {
-          AugurApp.store.commit('setRepo', {
-            gitURL: to.params.repo
-          });
-        } else {
-          AugurApp.store.commit('setRepo', {
-            githubURL: to.params.owner + '/' + to.params.repo
-          });
-        }
-      } else if (to.params.comparedrepo && augur.state.comparedRepos.length == 0) {
-        var tab = to.name;
-        tab = tab.substring(0, tab.length - 7);
-        AugurApp.store.commit("resetTab");
-        AugurApp.store.commit('setTab', {
-          tab: tab
-        });
-        AugurApp.store.commit('setRepo', {
-          githubURL: to.params.owner + '/' + to.params.repo
-        });
-        AugurApp.store.commit('addComparedRepo', {
-          githubURL: to.params.comparedowner + '/' + to.params.comparedrepo
-        });
-      } else if (to.params.groupid && augur.state.comparedRepos.length == 0) {
-        AugurApp.store.commit("resetTab");
-        var _tab = to.name;
-        _tab = _tab.substring(0, _tab.length - 5);
-        AugurApp.store.commit('setTab', {
-          tab: _tab
-        });
-        var repos = to.params.groupid.split('+');
-        if (repos[0].includes('github')) {
-          AugurApp.store.commit('setRepo', {
-            gitURL: repos[0]
-          });
-        } else {
-          AugurApp.store.commit('setRepo', {
-            githubURL: repos[0]
-          });
-        }
-        repos.shift();
-        // repos.pop()
-        repos.forEach(function (cmprepo) {
-          AugurApp.store.commit('addComparedRepo', {
-            githubURL: cmprepo
-          });
-        });
-      }
-    }
+  // AugurApp.router = router
+  // AugurApp.render = h => h(AugurApp)
 
-    next();
-  });
+  // window.AugurApp = new window.Vue(AugurApp).$mount('#app')
 
   window.AugurApp = new window.Vue({
     // components: { AugurApp },
@@ -2165,6 +2095,85 @@ window.onload = function () {
         loader();
         request.send();
     });
+    document.getElementById("lcBtn").addEventListener("click", function () {
+        document.getElementById("lcBtn").disabled = true;
+        document.getElementById("lcBtn").innerHTML = "Scanning the repository. This may take some time...";
+        console.log("SCAN STATE: " + localStorage.getItem("lRun"));
+        if (localStorage.getItem("lRun") != "Running") {
+            localStorage.setItem("lRun", "Running");
+            window.AugurAPI.getLicenseInfo().then(function (data) {
+                populate = document.getElementById("populate");
+                populate.parentNode.removeChild(populate);
+
+                var column = [];
+                column.push("Tag");
+                column.push("Info");
+                tableID = document.getElementById("licenseTable");
+
+                var tr = tableID.insertRow(0);
+                for (var i = 0; i < 2; i++) {
+                    var th = document.createElement("th");
+                    th.innerHTML = column[i];
+                    tr.appendChild(th);
+                }
+                console.log(data);
+                var g = 0;
+                var m = 0;
+                for (var k in data[0]) {
+                    if (k) {
+                        tr = tableID.insertRow(g + 1);
+                        for (var j = 0; j < 2; j++) {
+                            var tab = tr.insertCell(j - 1);
+                            var info = data[0][k];
+                            if (m % 2 == 0) {
+                                tab.style.backgroundColor = "#EAEAEA";
+                            }
+                            if (j % 2 != 0) {
+                                tab.innerHTML = k;
+                            } else {
+                                if (info == "NOASSERTION" || !info) {
+                                    info = "None provided";
+                                }
+                                tab.innerHTML = info;
+                            }
+                        }
+                        m++;
+                        g++;
+                    }
+                }
+                tableLI = document.getElementById("licenseTableLI");
+
+                var tr = tableLI.insertRow(0);
+                var th = document.createElement("th");
+                th.innerHTML = "Licenses identified";
+                tr.appendChild(th);
+                g = 0;
+                m = 0;
+                for (var n in data[1]) {
+                    tr = tableLI.insertRow(g + 1);
+                    var tabTwo = tr.insertCell(-1);
+                    tabTwo.innerHTML = data[1][n];
+                    if (m % 2 == 0) {
+                        tabTwo.style.backgroundColor = "#EAEAEA";
+                    }
+                    m++;
+                    g++;
+                }
+                console.log("Scanned. setting SCAN STATE...");
+                localStorage.setItem("lRun", "Stopped");
+                document.getElementById("lcBtn").style.visibility = "hidden";
+            }).then(function () {}, function (error) {
+                document.getElementById("lcBtn").disabled = false;
+
+                localStorage.setItem("lRun", "Stopped");
+                document.getElementById("lcBtn").innerHTML = "Error occurred when processing license information. Please try again.";
+            });
+        } else {
+            localStorage.setItem("lRun", "Stopped");
+            localStorage.setItem("refresh", "true");
+            location.reload();
+        }
+    });
 };
 module.exports = {
     data: function data() {
@@ -2179,8 +2188,8 @@ module.exports = {
 if (module.exports.__esModule) module.exports = module.exports.default
 var __vue__options__ = (typeof module.exports === "function"? module.exports.options: module.exports)
 if (__vue__options__.functional) {console.error("[vueify] functional components are not supported and should be defined in plain js files using render functions.")}
-__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('section',[_c('h1',[_vm._v("Risk")]),_vm._v(" "),_c('div',{staticStyle:{"display":"inline-block"}},[_c('h2',{staticStyle:{"display":"inline-block","color":"black !important"},attrs:{"id":"base"}},[_vm._v(_vm._s(_vm.$store.state.baseRepo))]),_vm._v(" "),(_vm.$store.state.comparedRepos.length > 0)?_c('h2',{staticClass:"repolisting",staticStyle:{"display":"inline-block"}},[_vm._v(" compared to: ")]):_vm._e(),_vm._v(" "),_vm._l((_vm.$store.state.comparedRepos),function(repo,index){return _c('h2',{staticStyle:{"display":"inline-block"}},[_c('span',{staticClass:"repolisting",style:({ 'color': _vm.colors[index] }),attrs:{"id":"compared"}},[_vm._v(" "+_vm._s(repo)+" ")])])})],2),_vm._v(" "),_c('h2',{staticClass:"col",staticStyle:{"margin-bottom":"20px"}},[_vm._v("CII Best Practices")]),_vm._v(" "),_c('button',{staticStyle:{"border":"2px solid black","width":"100%"},attrs:{"id":"ciiBtn"}},[_vm._v("Retrieve CII information")]),_vm._v(" "),_vm._m(0)])}
-__vue__options__.staticRenderFns = [function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticStyle:{"text-align":"center","width":"100%","display":"none"},attrs:{"id":"overcii"}},[_c('img',{staticClass:"col",staticStyle:{"width":"419px","height":"146px","margin-left":"auto","margin-right":"auto"},attrs:{"width":"200px","height":"200px","src":"https://i.ibb.co/n8f7NjX/CIITPARENT.png","href":"https://bestpractices.coreinfrastructure.org/en"}}),_vm._v(" "),_c('br'),_vm._v(" "),_c('div',{staticClass:"col-6",staticStyle:{"margin-left":"auto","margin-right":"auto","margin-top":"20px"},attrs:{"id":"CIIbp"}},[_c('div',{attrs:{"size":"total"}},[_c('img',{staticStyle:{"transform":"scale(2)"},attrs:{"id":"CIIbadge"}}),_vm._v(" "),_c('br'),_vm._v(" "),_c('h2',{attrs:{"id":"CII"}})])])])}]
+__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('section',[_c('h1',[_vm._v("Risk")]),_vm._v(" "),_c('div',{staticStyle:{"display":"inline-block"}},[_c('h2',{staticStyle:{"display":"inline-block","color":"black !important"},attrs:{"id":"base"}},[_vm._v(_vm._s(_vm.$store.state.baseRepo))]),_vm._v(" "),(_vm.$store.state.comparedRepos.length > 0)?_c('h2',{staticClass:"repolisting",staticStyle:{"display":"inline-block"}},[_vm._v(" compared to: ")]):_vm._e(),_vm._v(" "),_vm._l((_vm.$store.state.comparedRepos),function(repo,index){return _c('h2',{staticStyle:{"display":"inline-block"}},[_c('span',{staticClass:"repolisting",style:({ 'color': _vm.colors[index] }),attrs:{"id":"compared"}},[_vm._v(" "+_vm._s(repo)+" ")])])})],2),_vm._v(" "),_c('h2',{staticClass:"col",staticStyle:{"margin-bottom":"20px"}},[_vm._v("CII Best Practices")]),_vm._v(" "),_c('button',{staticStyle:{"border":"2px solid black","width":"100%"},attrs:{"id":"ciiBtn"}},[_vm._v("Retrieve CII information")]),_vm._v(" "),_vm._m(0),_vm._v(" "),_vm._m(1)])}
+__vue__options__.staticRenderFns = [function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticStyle:{"text-align":"center","width":"100%","display":"none"},attrs:{"id":"overcii"}},[_c('img',{staticClass:"col",staticStyle:{"width":"419px","height":"146px","margin-left":"auto","margin-right":"auto"},attrs:{"width":"200px","height":"200px","src":"https://i.ibb.co/n8f7NjX/CIITPARENT.png","href":"https://bestpractices.coreinfrastructure.org/en"}}),_vm._v(" "),_c('br'),_vm._v(" "),_c('div',{staticClass:"col-6",staticStyle:{"margin-left":"auto","margin-right":"auto","margin-top":"20px"},attrs:{"id":"CIIbp"}},[_c('div',{attrs:{"size":"total"}},[_c('img',{staticStyle:{"transform":"scale(2)"},attrs:{"id":"CIIbadge"}}),_vm._v(" "),_c('br'),_vm._v(" "),_c('div',{staticClass:"col-6",staticStyle:{"margin-left":"auto","margin-right":"auto","margin-top":"20px"},attrs:{"id":"CIIbp"}},[_c('div',{attrs:{"size":"total"}},[_c('img',{staticStyle:{"height":"50px"},attrs:{"id":"CIIbadge"}}),_vm._v(" "),_c('br'),_vm._v(" "),_c('h2',{attrs:{"id":"CII"}})])])])])])},function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"row"},[_c('button',{staticStyle:{"border":"2px solid black","width":"600px"},attrs:{"id":"lcBtn"}},[_vm._v("Scan this repository for license information")]),_vm._v(" "),_c('p',{attrs:{"id":"populate"}}),_vm._v(" "),_c('p',{attrs:{"id":"licenseInfo"}}),_vm._v(" "),_c('table',{attrs:{"id":"licenseTable"}},[_c('tbody')]),_vm._v(" "),_c('table',{attrs:{"id":"licenseTableLI"}},[_c('tbody')])])}]
 if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
@@ -2188,7 +2197,7 @@ if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
   if (!module.hot.data) {
     hotAPI.createRecord("data-v-0abc386c", __vue__options__)
   } else {
-    hotAPI.reload("data-v-0abc386c", __vue__options__)
+    hotAPI.rerender("data-v-0abc386c", __vue__options__)
   }
 })()}
 });

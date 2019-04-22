@@ -20,9 +20,31 @@
             <div size="total">
             <img id="CIIbadge" style="transform: scale(2)">
             <br>
+            <div id="CIIbp" style="margin-left: auto;margin-right: auto;margin-top:20px;" class="col-6">
+            <div size="total">
+            <img id="CIIbadge" style="height:50px">
+            <br>
             <h2 id="CII"></h2>
             </div>
-        </div>
+        </div></div></div>
+        <!--<div id="CIIbp" class="col-6">
+            <div size="total">
+            <img id="CIIbadge2">
+            <p id="CII2"></p>
+            </div>
+        </div>-->
+    </div>
+
+    <div class="row">
+        <button id="lcBtn" style="border:2px solid black; width:600px">Scan this repository for license information</button>
+        <p id="populate"></p>
+        <p id="licenseInfo"></p>
+        <table id="licenseTable">
+            <tbody></tbody>
+        </table>
+        <table id="licenseTableLI">
+            <tbody></tbody>
+        </table>
     </div>
   </section>
 </template>
@@ -65,6 +87,100 @@ document.getElementById("ciiBtn").addEventListener("click", function(){
     loader();
     request.send();
 });
+document.getElementById("lcBtn").addEventListener("click", function(){
+    document.getElementById("lcBtn").disabled = true;
+    document.getElementById("lcBtn").innerHTML = "Scanning the repository. This may take some time...";
+    console.log("SCAN STATE: " + localStorage.getItem("lRun"));
+    if (localStorage.getItem("lRun") != "Running") {
+        localStorage.setItem("lRun", "Running");
+        window.AugurAPI.getLicenseInfo().then(function(data) {
+            populate = document.getElementById("populate");
+            populate.parentNode.removeChild(populate);
+            //Retrieve raw data
+            //document.getElementById("licenseInfo").innerHTML = JSON.stringify(data);
+            var column = [];
+            column.push("Tag");
+            column.push("Info");
+            tableID = document.getElementById("licenseTable");
+            //Add border
+            //tableID.setAttribute("border", "2");
+            var tr = tableID.insertRow(0);
+            for (var i = 0; i < 2; i++)
+            {
+                var th = document.createElement("th");
+                th.innerHTML = column[i];
+                tr.appendChild(th);
+            }
+            console.log(data);
+            var g = 0;
+            var m = 0;
+            for (var k in data[0]) {
+                //console.log(data[0][k]);
+                if (k)
+                {
+                    tr = tableID.insertRow(g+1);
+                    for (var j = 0; j < 2; j++) {
+                    var tab = tr.insertCell(j-1);
+                    var info = data[0][k];
+                        if (m % 2 == 0)
+                        {
+                            tab.style.backgroundColor =  "#EAEAEA";
+                        }
+                        if (j % 2 != 0) {
+                            tab.innerHTML = k;
+                        }
+                        else {
+                            if (info == "NOASSERTION" || !info)
+                            {
+                                info = "None provided";
+                            }
+                            tab.innerHTML = info;
+                        }
+                }
+                m++;
+                g++;
+                }
+            }
+            tableLI = document.getElementById("licenseTableLI");
+            //Add border
+            //tableLI.setAttribute("border", "2");
+            var tr = tableLI.insertRow(0);
+            var th = document.createElement("th");
+            th.innerHTML = "Licenses identified";
+            tr.appendChild(th);
+            g = 0;
+            m = 0;
+            for (var n in data[1])
+            {
+                //console.log(data[1][n]);
+                tr = tableLI.insertRow(g+1);
+                var tabTwo = tr.insertCell(-1);
+                tabTwo.innerHTML = data[1][n];
+                if (m % 2 == 0)
+                {
+                    tabTwo.style.backgroundColor =  "#EAEAEA";
+                }
+                m++;
+                g++;
+            }
+            console.log("Scanned. setting SCAN STATE...");
+            localStorage.setItem("lRun", "Stopped");
+            document.getElementById("lcBtn").style.visibility = "hidden";
+        })
+    .then( () => {
+    }, error => {
+        document.getElementById("lcBtn").disabled = false;
+        //console.log("Error encountered. Stopping now...");
+        localStorage.setItem("lRun", "Stopped");
+        document.getElementById("lcBtn").innerHTML = "Error occurred when processing license information. Please try again.";
+    });
+    } else {
+        localStorage.setItem("lRun", "Stopped");
+        localStorage.setItem("refresh", "true");
+        location.reload();
+    }
+});
+
 }
 module.exports = {
   data() {
