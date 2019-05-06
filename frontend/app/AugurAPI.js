@@ -11,10 +11,13 @@ export default class AugurAPI {
     this.__timeout = null
     this.__pending = {}
 
+    this._riskRepo = window.location
+
     this.getDownloadedGitRepos = this.__EndpointFactory('git/repos')
     this.openRequests = 0
     this.getMetricsStatus = this.__EndpointFactory('metrics/status/filter')
     this.getMetricsStatusMetadata = this.__EndpointFactory('metrics/status/metadata')
+    this.getLicenseInfo = this.__EndpointFactoryRisk('dosocsv2/retrieve_license_information')
   }
 
   // __autobatcher (url, params, fireTimeout) {
@@ -37,6 +40,11 @@ export default class AugurAPI {
 
   __endpointURL (endpoint) {
     return '' + this._host + this._version + '/' + endpoint
+  }
+
+  __endpointURLRisk (endpoint) {
+    var riskuse = this._riskRepo.toString().split( '/' )
+    return '' + this._host + this._version + '/' + riskuse[riskuse.length-2] + '/' +  riskuse[riskuse.length-1] + '/' + endpoint
   }
 
   __URLFunctionFactory (url) {
@@ -64,6 +72,17 @@ export default class AugurAPI {
 
   __EndpointFactory (endpoint) {
     return this.__URLFunctionFactory(this.__endpointURL(endpoint))
+  }
+
+  __EndpointFactoryRisk (endpoint) {
+    var URL = String(window.location)
+    var URLements = URL.split("/")
+    console.log(URLements)
+    var owner = URLements[URLements.length - 3]
+    var repo = URLements[URLements.length - 2]
+    console.log(owner + "/" + repo)
+    var output = "https://localhost:3333/api/unstable/" + owner + "/" + repo + "/" + endpoint
+    return output
   }
 
   batch (endpoints) {
@@ -104,7 +123,6 @@ export default class AugurAPI {
       processedData[repo.toString()] = {}
     })
     return this.batch(endpoints).then((data) => {
-
       return new Promise((resolve, reject) => {
         if (Array.isArray(data)) {
           data.forEach(response => {
@@ -139,8 +157,7 @@ export default class AugurAPI {
         let splitURL = repo.gitURL.split('/')
         repo.owner = splitURL[1]
         repo.name = splitURL[2].split('.')[0]
-      }
-      else {
+      } else {
         let splitURL = repo.gitURL.split('/')
         repo.owner = splitURL[0]
         repo.name = splitURL[1]
@@ -246,6 +263,7 @@ export default class AugurAPI {
       Timeseries(repo, 'pullRequestsOpen', 'pulls')
 
       // RISK
+      Endpoint(repo, 'licenseInformation', 'dosocsv2/retrieve_license_information')
 
       // VALUE
 
@@ -289,14 +307,7 @@ export default class AugurAPI {
 
     if (repo.gitURL) {
       // Other
-      GitEndpoint(repo, 'changesByAuthor', 'changes_by_author'),
-      GitEndpoint(repo, 'cdRepTpIntervalLocCommits', 'cd_rep_tp_interval_loc_commits'),
-      GitEndpoint(repo, 'cdRgTpRankedLoc', 'cd_rg_tp_ranked_loc'),
-      GitEndpoint(repo, 'cdRgTpRankedCommits', 'cd_rg_tp_ranked_commits'),
-      GitEndpoint(repo, 'cdRgNewrepRankedLoc', 'cd_rg_newrep_ranked_loc'),
-      GitEndpoint(repo, 'cdRgNewrepRankedCommits', 'cd_rg_newrep_ranked_commits')
-
-
+      GitEndpoint(repo, 'changesByAuthor', 'changes_by_author')
     }
 
     return repo

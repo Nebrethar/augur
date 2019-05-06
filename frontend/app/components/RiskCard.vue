@@ -2,7 +2,7 @@
   <section>
     <h1>Risk</h1>
     <div style="display: inline-block;">
-      <h2 id="base" style="display: inline-block; color: black !important">{{ $store.state.baseRepo }}</h2>
+      <h2 id="base" style="display: inline-block; color: black !important" >{{ $store.state.baseRepo }}</h2>
       <h2 style="display: inline-block;" class="repolisting" v-if="$store.state.comparedRepos.length > 0"> compared to: </h2>
       <h2 style="display: inline-block;" v-for="(repo, index) in $store.state.comparedRepos">
         <span id="compared" v-bind:style="{ 'color': colors[index] }" class="repolisting"> {{ repo }} </span>
@@ -16,6 +16,7 @@
         href="https://bestpractices.coreinfrastructure.org/en"
         style="width:419px;height:146px;margin-left: auto;margin-right: auto;">
         <br>
+        <div id = "recloadContainer">
         <div id="CIIbp" style="margin-left: auto;margin-right: auto;margin-top:20px;" class="col-6">
             <div size="total">
             <img id="CIIbadge" style="transform: scale(2)">
@@ -33,8 +34,8 @@
             <p id="CII2"></p>
             </div>
         </div>-->
-    </div>
-
+    </div></div>
+    
     <div class="row">
         <button id="lcBtn" style="border:2px solid black; width:600px">Scan this repository for license information</button>
         <p id="populate"></p>
@@ -46,10 +47,18 @@
             <tbody></tbody>
         </table>
     </div>
+    </div>
   </section>
 </template>
 <script>
 window.onload = function() {
+var URL = String(window.location)
+var URLements = URL.split("/")
+console.log(URLements)
+var owner = URLements[URLements.length - 3]
+var repo = URLements[URLements.length - 2]
+console.log(owner + "/" + repo)
+document.getElementById("base").innerHTML = owner + "/" + repo
 document.getElementById("ciiBtn").addEventListener("click", function(){
     document.getElementById("overcii").style.display = "block"
     document.getElementById("overcii").class = "row"
@@ -93,7 +102,7 @@ document.getElementById("lcBtn").addEventListener("click", function(){
     console.log("SCAN STATE: " + localStorage.getItem("lRun"));
     if (localStorage.getItem("lRun") != "Running") {
         localStorage.setItem("lRun", "Running");
-        window.AugurAPI.getLicenseInfo().then(function(data) {
+        window.AugurAPI.getLicenseInfo(owner, repo).then(function(data) {
             populate = document.getElementById("populate");
             populate.parentNode.removeChild(populate);
             //Retrieve raw data

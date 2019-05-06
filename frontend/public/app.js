@@ -404,10 +404,13 @@ var AugurAPI = function () {
     this.__timeout = null;
     this.__pending = {};
 
+    this._riskRepo = window.location;
+
     this.getDownloadedGitRepos = this.__EndpointFactory('git/repos');
     this.openRequests = 0;
     this.getMetricsStatus = this.__EndpointFactory('metrics/status/filter');
     this.getMetricsStatusMetadata = this.__EndpointFactory('metrics/status/metadata');
+    this.getLicenseInfo = this.__EndpointFactoryRisk('dosocsv2/retrieve_license_information');
   }
 
   // __autobatcher (url, params, fireTimeout) {
@@ -432,6 +435,12 @@ var AugurAPI = function () {
     key: '__endpointURL',
     value: function __endpointURL(endpoint) {
       return '' + this._host + this._version + '/' + endpoint;
+    }
+  }, {
+    key: '__endpointURLRisk',
+    value: function __endpointURLRisk(endpoint) {
+      var riskuse = this._riskRepo.toString().split('/');
+      return '' + this._host + this._version + '/' + riskuse[riskuse.length - 2] + '/' + riskuse[riskuse.length - 1] + '/' + endpoint;
     }
   }, {
     key: '__URLFunctionFactory',
@@ -463,6 +472,18 @@ var AugurAPI = function () {
     key: '__EndpointFactory',
     value: function __EndpointFactory(endpoint) {
       return this.__URLFunctionFactory(this.__endpointURL(endpoint));
+    }
+  }, {
+    key: '__EndpointFactoryRisk',
+    value: function __EndpointFactoryRisk(endpoint) {
+      var URL = String(window.location);
+      var URLements = URL.split("/");
+      console.log(URLements);
+      var owner = URLements[URLements.length - 3];
+      var repo = URLements[URLements.length - 2];
+      console.log(owner + "/" + repo);
+      var output = "https://localhost:3333/api/unstable/" + owner + "/" + repo + "/" + endpoint;
+      return output;
     }
   }, {
     key: 'batch',
@@ -507,7 +528,6 @@ var AugurAPI = function () {
         processedData[repo.toString()] = {};
       });
       return this.batch(endpoints).then(function (data) {
-
         return new Promise(function (resolve, reject) {
           if (Array.isArray(data)) {
             data.forEach(function (response) {
@@ -653,6 +673,7 @@ var AugurAPI = function () {
         Timeseries(repo, 'pullRequestsOpen', 'pulls');
 
         // RISK
+        Endpoint(repo, 'licenseInformation', 'dosocsv2/retrieve_license_information');
 
         // VALUE
 
@@ -696,7 +717,7 @@ var AugurAPI = function () {
 
       if (repo.gitURL) {
         // Other
-        GitEndpoint(repo, 'changesByAuthor', 'changes_by_author'), GitEndpoint(repo, 'cdRepTpIntervalLocCommits', 'cd_rep_tp_interval_loc_commits'), GitEndpoint(repo, 'cdRgTpRankedLoc', 'cd_rg_tp_ranked_loc'), GitEndpoint(repo, 'cdRgTpRankedCommits', 'cd_rg_tp_ranked_commits'), GitEndpoint(repo, 'cdRgNewrepRankedLoc', 'cd_rg_newrep_ranked_loc'), GitEndpoint(repo, 'cdRgNewrepRankedCommits', 'cd_rg_newrep_ranked_commits');
+        GitEndpoint(repo, 'changesByAuthor', 'changes_by_author');
       }
 
       return repo;
@@ -2063,6 +2084,13 @@ if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
 "use strict";
 
 window.onload = function () {
+    var URL = String(window.location);
+    var URLements = URL.split("/");
+    console.log(URLements);
+    var owner = URLements[URLements.length - 3];
+    var repo = URLements[URLements.length - 2];
+    console.log(owner + "/" + repo);
+    document.getElementById("base").innerHTML = owner + "/" + repo;
     document.getElementById("ciiBtn").addEventListener("click", function () {
         document.getElementById("overcii").style.display = "block";
         document.getElementById("overcii").class = "row";
@@ -2101,7 +2129,7 @@ window.onload = function () {
         console.log("SCAN STATE: " + localStorage.getItem("lRun"));
         if (localStorage.getItem("lRun") != "Running") {
             localStorage.setItem("lRun", "Running");
-            window.AugurAPI.getLicenseInfo().then(function (data) {
+            window.AugurAPI.getLicenseInfo(owner, repo).then(function (data) {
                 populate = document.getElementById("populate");
                 populate.parentNode.removeChild(populate);
 
@@ -2189,7 +2217,7 @@ if (module.exports.__esModule) module.exports = module.exports.default
 var __vue__options__ = (typeof module.exports === "function"? module.exports.options: module.exports)
 if (__vue__options__.functional) {console.error("[vueify] functional components are not supported and should be defined in plain js files using render functions.")}
 __vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('section',[_c('h1',[_vm._v("Risk")]),_vm._v(" "),_c('div',{staticStyle:{"display":"inline-block"}},[_c('h2',{staticStyle:{"display":"inline-block","color":"black !important"},attrs:{"id":"base"}},[_vm._v(_vm._s(_vm.$store.state.baseRepo))]),_vm._v(" "),(_vm.$store.state.comparedRepos.length > 0)?_c('h2',{staticClass:"repolisting",staticStyle:{"display":"inline-block"}},[_vm._v(" compared to: ")]):_vm._e(),_vm._v(" "),_vm._l((_vm.$store.state.comparedRepos),function(repo,index){return _c('h2',{staticStyle:{"display":"inline-block"}},[_c('span',{staticClass:"repolisting",style:({ 'color': _vm.colors[index] }),attrs:{"id":"compared"}},[_vm._v(" "+_vm._s(repo)+" ")])])})],2),_vm._v(" "),_c('h2',{staticClass:"col",staticStyle:{"margin-bottom":"20px"}},[_vm._v("CII Best Practices")]),_vm._v(" "),_c('button',{staticStyle:{"border":"2px solid black","width":"100%"},attrs:{"id":"ciiBtn"}},[_vm._v("Retrieve CII information")]),_vm._v(" "),_vm._m(0),_vm._v(" "),_vm._m(1)])}
-__vue__options__.staticRenderFns = [function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticStyle:{"text-align":"center","width":"100%","display":"none"},attrs:{"id":"overcii"}},[_c('img',{staticClass:"col",staticStyle:{"width":"419px","height":"146px","margin-left":"auto","margin-right":"auto"},attrs:{"width":"200px","height":"200px","src":"https://i.ibb.co/n8f7NjX/CIITPARENT.png","href":"https://bestpractices.coreinfrastructure.org/en"}}),_vm._v(" "),_c('br'),_vm._v(" "),_c('div',{staticClass:"col-6",staticStyle:{"margin-left":"auto","margin-right":"auto","margin-top":"20px"},attrs:{"id":"CIIbp"}},[_c('div',{attrs:{"size":"total"}},[_c('img',{staticStyle:{"transform":"scale(2)"},attrs:{"id":"CIIbadge"}}),_vm._v(" "),_c('br'),_vm._v(" "),_c('div',{staticClass:"col-6",staticStyle:{"margin-left":"auto","margin-right":"auto","margin-top":"20px"},attrs:{"id":"CIIbp"}},[_c('div',{attrs:{"size":"total"}},[_c('img',{staticStyle:{"height":"50px"},attrs:{"id":"CIIbadge"}}),_vm._v(" "),_c('br'),_vm._v(" "),_c('h2',{attrs:{"id":"CII"}})])])])])])},function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"row"},[_c('button',{staticStyle:{"border":"2px solid black","width":"600px"},attrs:{"id":"lcBtn"}},[_vm._v("Scan this repository for license information")]),_vm._v(" "),_c('p',{attrs:{"id":"populate"}}),_vm._v(" "),_c('p',{attrs:{"id":"licenseInfo"}}),_vm._v(" "),_c('table',{attrs:{"id":"licenseTable"}},[_c('tbody')]),_vm._v(" "),_c('table',{attrs:{"id":"licenseTableLI"}},[_c('tbody')])])}]
+__vue__options__.staticRenderFns = [function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticStyle:{"text-align":"center","width":"100%","display":"none"},attrs:{"id":"overcii"}},[_c('img',{staticClass:"col",staticStyle:{"width":"419px","height":"146px","margin-left":"auto","margin-right":"auto"},attrs:{"width":"200px","height":"200px","src":"https://i.ibb.co/n8f7NjX/CIITPARENT.png","href":"https://bestpractices.coreinfrastructure.org/en"}}),_vm._v(" "),_c('br'),_vm._v(" "),_c('div',{attrs:{"id":"recloadContainer"}},[_c('div',{staticClass:"col-6",staticStyle:{"margin-left":"auto","margin-right":"auto","margin-top":"20px"},attrs:{"id":"CIIbp"}},[_c('div',{attrs:{"size":"total"}},[_c('img',{staticStyle:{"transform":"scale(2)"},attrs:{"id":"CIIbadge"}}),_vm._v(" "),_c('br'),_vm._v(" "),_c('div',{staticClass:"col-6",staticStyle:{"margin-left":"auto","margin-right":"auto","margin-top":"20px"},attrs:{"id":"CIIbp"}},[_c('div',{attrs:{"size":"total"}},[_c('img',{staticStyle:{"height":"50px"},attrs:{"id":"CIIbadge"}}),_vm._v(" "),_c('br'),_vm._v(" "),_c('h2',{attrs:{"id":"CII"}})])])])])])])},function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"row"},[_c('button',{staticStyle:{"border":"2px solid black","width":"600px"},attrs:{"id":"lcBtn"}},[_vm._v("Scan this repository for license information")]),_vm._v(" "),_c('p',{attrs:{"id":"populate"}}),_vm._v(" "),_c('p',{attrs:{"id":"licenseInfo"}}),_vm._v(" "),_c('table',{attrs:{"id":"licenseTable"}},[_c('tbody')]),_vm._v(" "),_c('table',{attrs:{"id":"licenseTableLI"}},[_c('tbody')])])}]
 if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
@@ -2197,7 +2225,7 @@ if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
   if (!module.hot.data) {
     hotAPI.createRecord("data-v-0abc386c", __vue__options__)
   } else {
-    hotAPI.rerender("data-v-0abc386c", __vue__options__)
+    hotAPI.reload("data-v-0abc386c", __vue__options__)
   }
 })()}
 });
