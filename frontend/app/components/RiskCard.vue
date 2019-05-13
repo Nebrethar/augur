@@ -70,6 +70,7 @@ document.getElementById("ciiBtn").addEventListener("click", function(){
             request.open('GET', 'https://bestpractices.coreinfrastructure.org/projects.json?pq=' + augURL, true);
             request.onload = function () {
                 var data = JSON.parse(this.response)[0];
+                console.log(data)
                 if (data != undefined) {
                     //console.log('CII NAME: ' + data.name);
                     //console.log(data);
@@ -97,12 +98,10 @@ document.getElementById("ciiBtn").addEventListener("click", function(){
     request.send();
 });
 document.getElementById("lcBtn").addEventListener("click", function(){
-    document.getElementById("lcBtn").disabled = true;
-    document.getElementById("lcBtn").innerHTML = "Scanning the repository. This may take some time...";
-    console.log("SCAN STATE: " + localStorage.getItem("lRun"));
-    if (localStorage.getItem("lRun") != "Running") {
-        localStorage.setItem("lRun", "Running");
-        window.AugurAPI.getLicenseInfo(owner, repo).then(function(data) {
+    let AugurAPI = require('AugurAPI').default
+    let augurAPI = new AugurAPI()
+    console.log(augurAPI)
+        augurAPI.getLicenseInfo().then(function(data) {
             populate = document.getElementById("populate");
             populate.parentNode.removeChild(populate);
             //Retrieve raw data
@@ -183,11 +182,6 @@ document.getElementById("lcBtn").addEventListener("click", function(){
         localStorage.setItem("lRun", "Stopped");
         document.getElementById("lcBtn").innerHTML = "Error occurred when processing license information. Please try again.";
     });
-    } else {
-        localStorage.setItem("lRun", "Stopped");
-        localStorage.setItem("refresh", "true");
-        location.reload();
-    }
 });
 
 }

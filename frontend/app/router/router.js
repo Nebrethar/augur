@@ -45,6 +45,7 @@ let routes = [
             name: "risk",
             components: {
               tabs: riskTabs,
+              //controls: MainControls,
               content: RiskCard
             }
           },

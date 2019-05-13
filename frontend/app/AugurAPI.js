@@ -1,5 +1,5 @@
-var $ = require('jquery')
-var _ = require('lodash')
+var $ = require('jquery');
+var _ = require('lodash');
 
 export default class AugurAPI {
   constructor (hostURL, version, autobatch) {
@@ -11,13 +11,11 @@ export default class AugurAPI {
     this.__timeout = null
     this.__pending = {}
 
-    this._riskRepo = window.location
-
     this.getDownloadedGitRepos = this.__EndpointFactory('git/repos')
     this.openRequests = 0
     this.getMetricsStatus = this.__EndpointFactory('metrics/status/filter')
     this.getMetricsStatusMetadata = this.__EndpointFactory('metrics/status/metadata')
-    this.getLicenseInfo = this.__EndpointFactoryRisk('dosocsv2/retrieve_license_information')
+    this.getLicenseInfo = this.__EndpointFactoryRisk('dosocsv2/retrieve_license_information/')
   }
 
   // __autobatcher (url, params, fireTimeout) {
@@ -42,10 +40,12 @@ export default class AugurAPI {
     return '' + this._host + this._version + '/' + endpoint
   }
 
+  /*
   __endpointURLRisk (endpoint) {
     var riskuse = this._riskRepo.toString().split( '/' )
     return '' + this._host + this._version + '/' + riskuse[riskuse.length-2] + '/' +  riskuse[riskuse.length-1] + '/' + endpoint
   }
+  */
 
   __URLFunctionFactory (url) {
     var self = this
@@ -71,18 +71,18 @@ export default class AugurAPI {
   }
 
   __EndpointFactory (endpoint) {
+    console.log("GOOD ENDPOINT:")
+    console.log(this.__endpointURL(endpoint))
     return this.__URLFunctionFactory(this.__endpointURL(endpoint))
   }
 
   __EndpointFactoryRisk (endpoint) {
-    var URL = String(window.location)
-    var URLements = URL.split("/")
-    console.log(URLements)
+    var URLements = String(window.location).split("/")
     var owner = URLements[URLements.length - 3]
     var repo = URLements[URLements.length - 2]
-    console.log(owner + "/" + repo)
-    var output = "https://localhost:3333/api/unstable/" + owner + "/" + repo + "/" + endpoint
-    return output
+    console.log("HOPEFULLY GOOD")
+    console.log("http://localhost:3333/api/unstable/" + owner + "/" + repo + "/" + endpoint)
+    return this.__URLFunctionFactory("https://localhost:5000/api/unstable/" + owner + "/" + repo + "/" + endpoint)
   }
 
   batch (endpoints) {
