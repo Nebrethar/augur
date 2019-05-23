@@ -82,7 +82,7 @@ export default class AugurAPI {
     var repo = URLements[URLements.length - 2]
     console.log("HOPEFULLY GOOD")
     console.log("http://localhost:3333/api/unstable/" + owner + "/" + repo + "/" + endpoint)
-    return this.__URLFunctionFactory("https://localhost:5000/api/unstable/" + owner + "/" + repo + "/" + endpoint)
+    return this.__URLFunctionFactory("https://localhost:3333/api/unstable/" + owner + "/" + repo + "/" + endpoint)
   }
 
   batch (endpoints) {

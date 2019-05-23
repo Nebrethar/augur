@@ -404,13 +404,11 @@ var AugurAPI = function () {
     this.__timeout = null;
     this.__pending = {};
 
-    this._riskRepo = window.location;
-
     this.getDownloadedGitRepos = this.__EndpointFactory('git/repos');
     this.openRequests = 0;
     this.getMetricsStatus = this.__EndpointFactory('metrics/status/filter');
     this.getMetricsStatusMetadata = this.__EndpointFactory('metrics/status/metadata');
-    this.getLicenseInfo = this.__EndpointFactoryRisk('dosocsv2/retrieve_license_information');
+    this.getLicenseInfo = this.__EndpointFactoryRisk('dosocsv2/retrieve_license_information/');
   }
 
   // __autobatcher (url, params, fireTimeout) {
@@ -436,12 +434,14 @@ var AugurAPI = function () {
     value: function __endpointURL(endpoint) {
       return '' + this._host + this._version + '/' + endpoint;
     }
-  }, {
-    key: '__endpointURLRisk',
-    value: function __endpointURLRisk(endpoint) {
-      var riskuse = this._riskRepo.toString().split('/');
-      return '' + this._host + this._version + '/' + riskuse[riskuse.length - 2] + '/' + riskuse[riskuse.length - 1] + '/' + endpoint;
+
+    /*
+    __endpointURLRisk (endpoint) {
+      var riskuse = this._riskRepo.toString().split( '/' )
+      return '' + this._host + this._version + '/' + riskuse[riskuse.length-2] + '/' +  riskuse[riskuse.length-1] + '/' + endpoint
     }
+    */
+
   }, {
     key: '__URLFunctionFactory',
     value: function __URLFunctionFactory(url) {
@@ -471,19 +471,19 @@ var AugurAPI = function () {
   }, {
     key: '__EndpointFactory',
     value: function __EndpointFactory(endpoint) {
+      console.log("GOOD ENDPOINT:");
+      console.log(this.__endpointURL(endpoint));
       return this.__URLFunctionFactory(this.__endpointURL(endpoint));
     }
   }, {
     key: '__EndpointFactoryRisk',
     value: function __EndpointFactoryRisk(endpoint) {
-      var URL = String(window.location);
-      var URLements = URL.split("/");
-      console.log(URLements);
+      var URLements = String(window.location).split("/");
       var owner = URLements[URLements.length - 3];
       var repo = URLements[URLements.length - 2];
-      console.log(owner + "/" + repo);
-      var output = "https://localhost:3333/api/unstable/" + owner + "/" + repo + "/" + endpoint;
-      return output;
+      console.log("HOPEFULLY GOOD");
+      console.log("http://localhost:3333/api/unstable/" + owner + "/" + repo + "/" + endpoint);
+      return this.__URLFunctionFactory("https://localhost:3333/api/unstable/" + owner + "/" + repo + "/" + endpoint);
     }
   }, {
     key: 'batch',
@@ -1367,7 +1367,7 @@ module.exports = {
 if (module.exports.__esModule) module.exports = module.exports.default
 var __vue__options__ = (typeof module.exports === "function"? module.exports.options: module.exports)
 if (__vue__options__.functional) {console.error("[vueify] functional components are not supported and should be defined in plain js files using render functions.")}
-__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('section',{staticClass:"unmaterialized"},[_c('h3',[_vm._v("Downloaded Git Repos by Project")]),_vm._v(" "),_c('div',{staticClass:"row section"},[_c('hr'),_vm._v(" "),_c('div',{staticClass:"col col-12 relative spinner loader",staticStyle:{"margin-left":"42.4%"}}),_vm._v(" "),_vm._l((_vm.projects),function(project){return _c('div',{staticClass:"col-6"},[_c('h4',[_vm._v(_vm._s(project))]),_vm._v(" "),_c('div',{staticClass:"repo-link-holder"},[_c('table',{staticClass:"is-responsive"},[_vm._m(0,true),_vm._v(" "),_c('tbody',{staticClass:"repo-link-table repo-link-table-body"},_vm._l((_vm.repos[project]),function(repo){return _c('tr',[_c('td',[_c('a',{attrs:{"href":"#"},on:{"click":function($event){return _vm.onGitRepo(repo)}}},[_vm._v(_vm._s(repo.url))])]),_vm._v(" "),_c('td',[_vm._v(_vm._s(repo.status))])])}),0)])])])})],2)])}
+__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('section',{staticClass:"unmaterialized"},[_c('h3',[_vm._v("Downloaded Git Repos by Project")]),_vm._v(" "),_c('div',{staticClass:"row section"},[_c('hr'),_vm._v(" "),_c('div',{staticClass:"col col-12 relative spinner loader",staticStyle:{"margin-left":"42.4%"}}),_vm._v(" "),_vm._l((_vm.projects),function(project){return _c('div',{staticClass:"col-6"},[_c('h4',[_vm._v(_vm._s(project))]),_vm._v(" "),_c('div',{staticClass:"repo-link-holder"},[_c('table',{staticClass:"is-responsive"},[_vm._m(0,true),_vm._v(" "),_c('tbody',{staticClass:"repo-link-table repo-link-table-body"},_vm._l((_vm.repos[project]),function(repo){return _c('tr',[_c('td',[_c('a',{attrs:{"href":"#"},on:{"click":function($event){_vm.onGitRepo(repo)}}},[_vm._v(_vm._s(repo.url))])]),_vm._v(" "),_c('td',[_vm._v(_vm._s(repo.status))])])}))])])])})],2)])}
 __vue__options__.staticRenderFns = [function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('thead',{staticClass:"repo-link-table repo-link-table-body"},[_c('tr',[_c('th',[_vm._v("URL")]),_vm._v(" "),_c('th',[_vm._v("Status")])])])}]
 if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -1603,7 +1603,7 @@ if (module.exports.__esModule) module.exports = module.exports.default
 var __vue__options__ = (typeof module.exports === "function"? module.exports.options: module.exports)
 if (__vue__options__.functional) {console.error("[vueify] functional components are not supported and should be defined in plain js files using render functions.")}
 __vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _vm._m(0)}
-__vue__options__.staticRenderFns = [function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"limiter"},[_c('div',{staticClass:"container-login background"},[_c('div',{staticClass:"wrap-login"},[_c('form',{staticClass:"login-form validate-form"},[_c('div',{staticStyle:{"text-align":"center","padding-right":"10px"}},[_c('img',{attrs:{"src":"static/logo.png","id":"logo","alt":"CHAOSS: Community Health Analytics for Open Source Software"}})]),_vm._v(" "),_c('span',{staticClass:"login-form-title"},[_vm._v("\r\n          Log in\r\n        ")]),_vm._v(" "),_c('div',{staticClass:"wrap-input validate-input",attrs:{"data-validate":"Enter username"}},[_c('input',{staticClass:"input",attrs:{"type":"text","name":"username","placeholder":"Username"}}),_vm._v(" "),_c('span',{staticClass:"focus-input",staticStyle:{"padding":"12px 0px 0px 10px"}},[_vm._v("👤")])]),_vm._v(" "),_c('div',{staticClass:"wrap-input validate-input",attrs:{"data-validate":"Enter password"}},[_c('input',{staticClass:"input",attrs:{"type":"password","placeholder":"Password"}}),_vm._v(" "),_c('span',{staticClass:"focus-input",staticStyle:{"padding":"12px 0px 0px 10px"}},[_vm._v("🔒")])]),_vm._v(" "),_c('div',{staticClass:"contact-form-checkbox"},[_c('input',{staticClass:"input-checkbox",attrs:{"id":"ckb1","type":"checkbox"}}),_vm._v(" "),_c('label',{staticClass:"label-checkbox",attrs:{"for":"ckb1"}},[_vm._v("\r\n            Remember me\r\n          ")])]),_vm._v(" "),_c('div',{staticClass:"container-login-form-btn"},[_c('button',{staticClass:"login-form-btn"},[_vm._v("\r\n            Login\r\n          ")])])])])])])}]
+__vue__options__.staticRenderFns = [function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"limiter"},[_c('div',{staticClass:"container-login background"},[_c('div',{staticClass:"wrap-login"},[_c('form',{staticClass:"login-form validate-form"},[_c('div',{staticStyle:{"text-align":"center","padding-right":"10px"}},[_c('img',{attrs:{"src":"static/logo.png","id":"logo","alt":"CHAOSS: Community Health Analytics for Open Source Software"}})]),_vm._v(" "),_c('span',{staticClass:"login-form-title"},[_vm._v("\n          Log in\n        ")]),_vm._v(" "),_c('div',{staticClass:"wrap-input validate-input",attrs:{"data-validate":"Enter username"}},[_c('input',{staticClass:"input",attrs:{"type":"text","name":"username","placeholder":"Username"}}),_vm._v(" "),_c('span',{staticClass:"focus-input",staticStyle:{"padding":"12px 0px 0px 10px"}},[_vm._v("👤")])]),_vm._v(" "),_c('div',{staticClass:"wrap-input validate-input",attrs:{"data-validate":"Enter password"}},[_c('input',{staticClass:"input",attrs:{"type":"password","placeholder":"Password"}}),_vm._v(" "),_c('span',{staticClass:"focus-input",staticStyle:{"padding":"12px 0px 0px 10px"}},[_vm._v("🔒")])]),_vm._v(" "),_c('div',{staticClass:"contact-form-checkbox"},[_c('input',{staticClass:"input-checkbox",attrs:{"id":"ckb1","type":"checkbox"}}),_vm._v(" "),_c('label',{staticClass:"label-checkbox",attrs:{"for":"ckb1"}},[_vm._v("\n            Remember me\n          ")])]),_vm._v(" "),_c('div',{staticClass:"container-login-form-btn"},[_c('button',{staticClass:"login-form-btn"},[_vm._v("\n            Login\n          ")])])])])])])}]
 if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
@@ -1876,7 +1876,7 @@ module.exports = {
 if (module.exports.__esModule) module.exports = module.exports.default
 var __vue__options__ = (typeof module.exports === "function"? module.exports.options: module.exports)
 if (__vue__options__.functional) {console.error("[vueify] functional components are not supported and should be defined in plain js files using render functions.")}
-__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"row",attrs:{"id":"controls"}},[_c('div',{staticClass:"col col-12"},[_c('div',{staticClass:"form"},[_c('div',{staticClass:"topic"},[_c('div',{staticClass:"container"},[_c('div',{staticClass:"row justify-content-md-center"},[_c('div',{staticClass:"col col-9"},[_c('div',{staticClass:"row"},[_vm._m(0),_vm._v(" "),_c('div',{directives:[{name:"click-outside",rawName:"v-click-outside",value:(_vm.stopSelecting),expression:"stopSelecting"}],staticClass:"row col col-4",staticStyle:{"text-align":"center !important"}},[_c('div',{staticClass:"col col-6",staticStyle:{"display":"inline !important"},on:{"click":_vm.keepSelecting}},[_c('multiselect',{attrs:{"options":_vm.projects,"placeholder":_vm.project},model:{value:(_vm.project),callback:function ($$v) {_vm.project=$$v},expression:"project"}})],1),_vm._v(" "),_c('div',{staticClass:"col col-6",staticStyle:{"display":"inline !important"},on:{"click":_vm.keepSelecting}},[_c('multiselect',{staticClass:"search reposearch special",attrs:{"options":_vm.options,"multiple":true,"group-label":"url","placeholder":"Select repos"},model:{value:(_vm.values),callback:function ($$v) {_vm.values=$$v},expression:"values"}})],1)]),_vm._v(" "),_c('div',{staticClass:"col col-1"},[_c('input',{staticStyle:{"max-width":"69.9px"},attrs:{"type":"button","value":"Apply"},on:{"click":function($event){_vm.onArrayCompare(); _vm.onValuesClear()}}})]),_vm._v(" "),_c('div',{staticClass:"col col-1"},[_c('input',{staticStyle:{"max-width":"69.9px"},attrs:{"type":"button","value":"Reset"},on:{"click":function($event){return _vm.onClear()}}})]),_vm._v(" "),_c('div',{staticClass:"col col-3"},[_c('input',{staticClass:"search reposearch",attrs:{"type":"text","placeholder":"Search other GitHub URL"},on:{"change":_vm.onCompare}}),_vm._v(" "),_c('p')])])]),_vm._v(" "),_c('div',{staticClass:"col col-3",attrs:{"id":"collapse"}},[_c('div',{directives:[{name:"show",rawName:"v-show",value:(_vm.isCollapsed),expression:"isCollapsed"}],staticClass:"col col-12 align-bottom",attrs:{"align":"right"},on:{"click":function($event){return _vm.collapseText()}}},[_vm._v("Less configuration options ▼")]),_vm._v(" "),_c('div',{directives:[{name:"show",rawName:"v-show",value:(!_vm.isCollapsed),expression:"!isCollapsed"}],staticClass:"col col-12 align-bottom",attrs:{"align":"right"},on:{"click":function($event){return _vm.collapseText()}}},[_vm._v("More configuration options ▶")])])])]),_vm._v(" "),_c('div',{staticClass:"row gutters section collapsible collapsed"},[_c('div',{staticClass:"col col-5"},[_c('label',[_c('h6',[_vm._v("Line Chart Options")]),_vm._v(" "),_c('div',{staticClass:"row"},[_c('div',{staticClass:"col col-6"},[_c('div',{staticClass:"form-item form-checkboxes"},[_c('label',{staticClass:"checkbox"},[_c('input',{attrs:{"name":"comparebaseline","value":"each","type":"checkbox"},on:{"change":_vm.onRawWeeklyChange}}),_vm._v("Raw weekly values"),_c('sup',{staticClass:"warn"})])]),_vm._v(" "),_c('div',{staticClass:"form-item form-checkboxes"},[_c('label',{staticClass:"checkbox"},[_c('input',{attrs:{"name":"comparebaseline","value":"each","type":"checkbox","disabled":!_vm.disabled,"checked":""},domProps:{"checked":_vm.disabled},on:{"change":_vm.onAreaChange}}),_vm._v("Standard deviation")])])]),_vm._v(" "),_c('div',{staticClass:"col col-6"},[_c('div',{staticClass:"form-item form-checkboxes"},[_c('label',{staticClass:"checkbox"},[_c('input',{attrs:{"name":"comparebaseline","value":"each","type":"checkbox","disabled":!_vm.disabled,"checked":""},domProps:{"checked":_vm.disabled},on:{"change":_vm.onTooltipChange}}),_vm._v("Show tooltip")])]),_vm._v(" "),_c('div',{staticClass:"form-item form-checkboxes"},[_c('label',{staticClass:"checkbox"},[_c('input',{attrs:{"name":"comparebaseline","value":"each","type":"checkbox","checked":""},on:{"change":_vm.onDetailChange}}),_vm._v("Enable detail")])])]),_vm._v(" "),_c('label',[_c('h6',[_vm._v("Bubble Chart Options ")]),_vm._v(" "),_c('div',{staticClass:"form-item form-checkboxes"},[_c('label',{staticClass:"checkbox"},[_c('input',{attrs:{"name":"comparebaseline","value":"each","type":"checkbox"},on:{"change":_vm.onShowBelowAverageChange}}),_vm._v("Show users with below-average total contributions"),_c('sup',{staticClass:"warn"})]),_c('br')])]),_vm._v(" "),_vm._m(1),_vm._v(" "),_c('div',{staticClass:"col col-11"},[_c('small',[_vm._v("1. Line charts show a rolling mean over "+_vm._s(_vm.info.days)+" days with data points at each "+_vm._s(_vm.info.points)+"-day interval")])])])])]),_vm._v(" "),_c('div',{staticClass:"col col-7"},[_c('div',{staticClass:"row"},[_c('div',{staticClass:"col col-6"},[_c('h6',[_vm._v("Chart Timeline Configuration")]),_vm._v(" "),_c('div',{staticClass:"row gutters"},[_c('div',{staticClass:"col col-11"},[_c('div',{staticClass:"form-item"},[_c('label',[_vm._v("Start Date\r\n                          "),_c('div',{staticClass:"row gutters"},[_c('div',{staticClass:"col col-7"},[_c('div',{staticClass:"form-item"},[_c('select',{ref:"startMonth",on:{"change":_vm.onStartDateChange}},_vm._l((_vm.months),function(month){return _c('option',{domProps:{"value":month.value,"selected":(_vm.startMonth) == month.value}},[_vm._v(_vm._s(month.name))])}),0),_vm._v(" "),_c('div',{staticClass:"desc"},[_vm._v("Month")])])]),_vm._v(" "),_c('div',{staticClass:"col col-5"},[_c('div',{staticClass:"form-item"},[_c('select',{ref:"startYear",on:{"change":_vm.onStartDateChange}},_vm._l((_vm.years),function(year){return _c('option',{domProps:{"value":year,"selected":_vm.startYear == year}},[_vm._v(_vm._s(year))])}),0),_vm._v(" "),_c('div',{staticClass:"desc"},[_vm._v("Year")])])])])])])])]),_vm._v(" "),_c('p'),_vm._v(" "),_c('div',{staticClass:"row gutters"},[_c('div',{staticClass:"col col-11"},[_c('div',{staticClass:"form-item"},[_c('label',[_vm._v("End Date\r\n                          "),_c('div',{staticClass:"row gutters"},[_c('div',{staticClass:"col col-7"},[_c('div',{staticClass:"form-item"},[_c('select',{ref:"endMonth",on:{"change":_vm.onEndDateChange}},_vm._l((_vm.months),function(month){return _c('option',{domProps:{"value":month.value,"selected":(_vm.endMonth) == month.value}},[_vm._v(_vm._s(month.name))])}),0),_vm._v(" "),_c('div',{staticClass:"desc"},[_vm._v("Month")])])]),_vm._v(" "),_c('div',{staticClass:"col col-5"},[_c('div',{staticClass:"form-item"},[_c('select',{ref:"endYear",on:{"change":_vm.onEndDateChange}},_vm._l((_vm.years),function(year){return _c('option',{domProps:{"value":year,"selected":_vm.endYear == year}},[_vm._v(_vm._s(year))])}),0),_vm._v(" "),_c('div',{staticClass:"desc"},[_vm._v("Year")])])])])])])])]),_vm._v(" "),_c('br')]),_vm._v(" "),_c('div',{staticClass:"col col-1"}),_vm._v(" "),_c('div',{staticClass:"col col-5"},[_c('h6',[_vm._v("Rendering")]),_vm._v(" "),_c('label',[_vm._v("Line Charts"),_c('sup',[_vm._v("1")]),_c('sup',{staticClass:"warn"}),_vm._v(" "),_c('div',{staticClass:"append col col-10"},[_c('input',{ref:"info",attrs:{"type":"number","min":"20","id":"averagetimespan","value":"180","placeholder":"180"},on:{"change":_vm.onTrailingAverageChange}}),_c('span',[_vm._v("day average")])]),_vm._v(" "),_c('p'),_vm._v(" "),_c('h6',[_vm._v("Comparison Type")]),_vm._v(" "),_c('label',[_c('div',{staticClass:"form-item form-checkboxes"},[_c('label',{staticClass:"checkbox"},[_c('input',{attrs:{"name":"comparebaseline","value":"zscore","type":"radio"},domProps:{"checked":_vm.compare == 'zscore'},on:{"change":_vm.onCompareChange}}),_vm._v("Z-score")]),_c('br'),_vm._v(" "),_c('label',{staticClass:"checkbox"},[_c('input',{attrs:{"name":"comparebaseline","value":"baseline","type":"radio"},domProps:{"checked":_vm.compare == 'baseline'},on:{"change":_vm.onCompareChange}}),_vm._v("Baseline is compared")]),_vm._v(" "),_c('label',{staticClass:"checkbox"},[_c('input',{attrs:{"name":"comparebaseline","value":"rolling","type":"radio"},domProps:{"checked":_vm.compare == 'rolling'},on:{"change":_vm.onCompareChange}}),_vm._v("Rolling average")])])])]),_vm._v(" "),_c('br')])])])])])])])])}
+__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"row",attrs:{"id":"controls"}},[_c('div',{staticClass:"col col-12"},[_c('div',{staticClass:"form"},[_c('div',{staticClass:"topic"},[_c('div',{staticClass:"container"},[_c('div',{staticClass:"row justify-content-md-center"},[_c('div',{staticClass:"col col-9"},[_c('div',{staticClass:"row"},[_vm._m(0),_vm._v(" "),_c('div',{directives:[{name:"click-outside",rawName:"v-click-outside",value:(_vm.stopSelecting),expression:"stopSelecting"}],staticClass:"row col col-4",staticStyle:{"text-align":"center !important"}},[_c('div',{staticClass:"col col-6",staticStyle:{"display":"inline !important"},on:{"click":_vm.keepSelecting}},[_c('multiselect',{attrs:{"options":_vm.projects,"placeholder":_vm.project},model:{value:(_vm.project),callback:function ($$v) {_vm.project=$$v},expression:"project"}})],1),_vm._v(" "),_c('div',{staticClass:"col col-6",staticStyle:{"display":"inline !important"},on:{"click":_vm.keepSelecting}},[_c('multiselect',{staticClass:"search reposearch special",attrs:{"options":_vm.options,"multiple":true,"group-label":"url","placeholder":"Select repos"},model:{value:(_vm.values),callback:function ($$v) {_vm.values=$$v},expression:"values"}})],1)]),_vm._v(" "),_c('div',{staticClass:"col col-1"},[_c('input',{staticStyle:{"max-width":"69.9px"},attrs:{"type":"button","value":"Apply"},on:{"click":function($event){_vm.onArrayCompare(); _vm.onValuesClear()}}})]),_vm._v(" "),_c('div',{staticClass:"col col-1"},[_c('input',{staticStyle:{"max-width":"69.9px"},attrs:{"type":"button","value":"Reset"},on:{"click":function($event){_vm.onClear()}}})]),_vm._v(" "),_c('div',{staticClass:"col col-3"},[_c('input',{staticClass:"search reposearch",attrs:{"type":"text","placeholder":"Search other GitHub URL"},on:{"change":_vm.onCompare}}),_vm._v(" "),_c('p')])])]),_vm._v(" "),_c('div',{staticClass:"col col-3",attrs:{"id":"collapse"}},[_c('div',{directives:[{name:"show",rawName:"v-show",value:(_vm.isCollapsed),expression:"isCollapsed"}],staticClass:"col col-12 align-bottom",attrs:{"align":"right"},on:{"click":function($event){_vm.collapseText()}}},[_vm._v("Less configuration options ▼")]),_vm._v(" "),_c('div',{directives:[{name:"show",rawName:"v-show",value:(!_vm.isCollapsed),expression:"!isCollapsed"}],staticClass:"col col-12 align-bottom",attrs:{"align":"right"},on:{"click":function($event){_vm.collapseText()}}},[_vm._v("More configuration options ▶")])])])]),_vm._v(" "),_c('div',{staticClass:"row gutters section collapsible collapsed"},[_c('div',{staticClass:"col col-5"},[_c('label',[_c('h6',[_vm._v("Line Chart Options")]),_vm._v(" "),_c('div',{staticClass:"row"},[_c('div',{staticClass:"col col-6"},[_c('div',{staticClass:"form-item form-checkboxes"},[_c('label',{staticClass:"checkbox"},[_c('input',{attrs:{"name":"comparebaseline","value":"each","type":"checkbox"},on:{"change":_vm.onRawWeeklyChange}}),_vm._v("Raw weekly values"),_c('sup',{staticClass:"warn"})])]),_vm._v(" "),_c('div',{staticClass:"form-item form-checkboxes"},[_c('label',{staticClass:"checkbox"},[_c('input',{attrs:{"name":"comparebaseline","value":"each","type":"checkbox","disabled":!_vm.disabled,"checked":""},domProps:{"checked":_vm.disabled},on:{"change":_vm.onAreaChange}}),_vm._v("Standard deviation")])])]),_vm._v(" "),_c('div',{staticClass:"col col-6"},[_c('div',{staticClass:"form-item form-checkboxes"},[_c('label',{staticClass:"checkbox"},[_c('input',{attrs:{"name":"comparebaseline","value":"each","type":"checkbox","disabled":!_vm.disabled,"checked":""},domProps:{"checked":_vm.disabled},on:{"change":_vm.onTooltipChange}}),_vm._v("Show tooltip")])]),_vm._v(" "),_c('div',{staticClass:"form-item form-checkboxes"},[_c('label',{staticClass:"checkbox"},[_c('input',{attrs:{"name":"comparebaseline","value":"each","type":"checkbox","checked":""},on:{"change":_vm.onDetailChange}}),_vm._v("Enable detail")])])]),_vm._v(" "),_c('label',[_c('h6',[_vm._v("Bubble Chart Options ")]),_vm._v(" "),_c('div',{staticClass:"form-item form-checkboxes"},[_c('label',{staticClass:"checkbox"},[_c('input',{attrs:{"name":"comparebaseline","value":"each","type":"checkbox"},on:{"change":_vm.onShowBelowAverageChange}}),_vm._v("Show users with below-average total contributions"),_c('sup',{staticClass:"warn"})]),_c('br')])]),_vm._v(" "),_vm._m(1),_vm._v(" "),_c('div',{staticClass:"col col-11"},[_c('small',[_vm._v("1. Line charts show a rolling mean over "+_vm._s(_vm.info.days)+" days with data points at each "+_vm._s(_vm.info.points)+"-day interval")])])])])]),_vm._v(" "),_c('div',{staticClass:"col col-7"},[_c('div',{staticClass:"row"},[_c('div',{staticClass:"col col-6"},[_c('h6',[_vm._v("Chart Timeline Configuration")]),_vm._v(" "),_c('div',{staticClass:"row gutters"},[_c('div',{staticClass:"col col-11"},[_c('div',{staticClass:"form-item"},[_c('label',[_vm._v("Start Date\n                          "),_c('div',{staticClass:"row gutters"},[_c('div',{staticClass:"col col-7"},[_c('div',{staticClass:"form-item"},[_c('select',{ref:"startMonth",on:{"change":_vm.onStartDateChange}},_vm._l((_vm.months),function(month){return _c('option',{domProps:{"value":month.value,"selected":(_vm.startMonth) == month.value}},[_vm._v(_vm._s(month.name))])})),_vm._v(" "),_c('div',{staticClass:"desc"},[_vm._v("Month")])])]),_vm._v(" "),_c('div',{staticClass:"col col-5"},[_c('div',{staticClass:"form-item"},[_c('select',{ref:"startYear",on:{"change":_vm.onStartDateChange}},_vm._l((_vm.years),function(year){return _c('option',{domProps:{"value":year,"selected":_vm.startYear == year}},[_vm._v(_vm._s(year))])})),_vm._v(" "),_c('div',{staticClass:"desc"},[_vm._v("Year")])])])])])])])]),_vm._v(" "),_c('p'),_vm._v(" "),_c('div',{staticClass:"row gutters"},[_c('div',{staticClass:"col col-11"},[_c('div',{staticClass:"form-item"},[_c('label',[_vm._v("End Date\n                          "),_c('div',{staticClass:"row gutters"},[_c('div',{staticClass:"col col-7"},[_c('div',{staticClass:"form-item"},[_c('select',{ref:"endMonth",on:{"change":_vm.onEndDateChange}},_vm._l((_vm.months),function(month){return _c('option',{domProps:{"value":month.value,"selected":(_vm.endMonth) == month.value}},[_vm._v(_vm._s(month.name))])})),_vm._v(" "),_c('div',{staticClass:"desc"},[_vm._v("Month")])])]),_vm._v(" "),_c('div',{staticClass:"col col-5"},[_c('div',{staticClass:"form-item"},[_c('select',{ref:"endYear",on:{"change":_vm.onEndDateChange}},_vm._l((_vm.years),function(year){return _c('option',{domProps:{"value":year,"selected":_vm.endYear == year}},[_vm._v(_vm._s(year))])})),_vm._v(" "),_c('div',{staticClass:"desc"},[_vm._v("Year")])])])])])])])]),_vm._v(" "),_c('br')]),_vm._v(" "),_c('div',{staticClass:"col col-1"}),_vm._v(" "),_c('div',{staticClass:"col col-5"},[_c('h6',[_vm._v("Rendering")]),_vm._v(" "),_c('label',[_vm._v("Line Charts"),_c('sup',[_vm._v("1")]),_c('sup',{staticClass:"warn"}),_vm._v(" "),_c('div',{staticClass:"append col col-10"},[_c('input',{ref:"info",attrs:{"type":"number","min":"20","id":"averagetimespan","value":"180","placeholder":"180"},on:{"change":_vm.onTrailingAverageChange}}),_c('span',[_vm._v("day average")])]),_vm._v(" "),_c('p'),_vm._v(" "),_c('h6',[_vm._v("Comparison Type")]),_vm._v(" "),_c('label',[_c('div',{staticClass:"form-item form-checkboxes"},[_c('label',{staticClass:"checkbox"},[_c('input',{attrs:{"name":"comparebaseline","value":"zscore","type":"radio"},domProps:{"checked":_vm.compare == 'zscore'},on:{"change":_vm.onCompareChange}}),_vm._v("Z-score")]),_c('br'),_vm._v(" "),_c('label',{staticClass:"checkbox"},[_c('input',{attrs:{"name":"comparebaseline","value":"baseline","type":"radio"},domProps:{"checked":_vm.compare == 'baseline'},on:{"change":_vm.onCompareChange}}),_vm._v("Baseline is compared")]),_vm._v(" "),_c('label',{staticClass:"checkbox"},[_c('input',{attrs:{"name":"comparebaseline","value":"rolling","type":"radio"},domProps:{"checked":_vm.compare == 'rolling'},on:{"change":_vm.onCompareChange}}),_vm._v("Rolling average")])])])]),_vm._v(" "),_c('br')])])])])])])])])}
 __vue__options__.staticRenderFns = [function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"col col-3",attrs:{"align":"center","id":"comparetext"}},[_c('h6',[_vm._v("Compare from your repos:")])])},function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"col col-12"},[_c('small',{staticClass:"warn"},[_vm._v(" - These options affect performance")])])}]
 if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -1990,7 +1990,7 @@ exports.default = {
 if (module.exports.__esModule) module.exports = module.exports.default
 var __vue__options__ = (typeof module.exports === "function"? module.exports.options: module.exports)
 if (__vue__options__.functional) {console.error("[vueify] functional components are not supported and should be defined in plain js files using render functions.")}
-__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"is-table-container"},[_c('div',{staticClass:"fullwidth"},[_c('augur-header')],1),_vm._v(" "),_c('section',[_c('h3',[_vm._v("CHAOSS Metrics Implementation Status")]),_vm._v(" "),_c('div',{staticClass:"row gutters"},[_c('div',{staticClass:"col col-4"},[_c('label',[_vm._v("Group:\n      "),_c('select',{directives:[{name:"model",rawName:"v-model",value:(_vm.selected_group),expression:"selected_group"}],attrs:{"id":"metric_group"},on:{"change":[function($event){var $$selectedVal = Array.prototype.filter.call($event.target.options,function(o){return o.selected}).map(function(o){var val = "_value" in o ? o._value : o.value;return val}); _vm.selected_group=$event.target.multiple ? $$selectedVal : $$selectedVal[0]},function($event){return _vm.getMetricsStatus()}]}},_vm._l((_vm.metadata['groups']),function(group){return _c('option',{domProps:{"value":group}},[_vm._v("\n        "+_vm._s(group)+"\n       ")])}),0)])]),_vm._v(" "),_c('div',{staticClass:"col col-4"},[_c('label',[_vm._v("Source:\n      "),_c('select',{directives:[{name:"model",rawName:"v-model",value:(_vm.selected_source),expression:"selected_source"}],attrs:{"id":"metric_source"},on:{"change":[function($event){var $$selectedVal = Array.prototype.filter.call($event.target.options,function(o){return o.selected}).map(function(o){var val = "_value" in o ? o._value : o.value;return val}); _vm.selected_source=$event.target.multiple ? $$selectedVal : $$selectedVal[0]},function($event){return _vm.getMetricsStatus()}]}},_vm._l((_vm.metadata['data_sources']),function(data_source){return _c('option',{domProps:{"value":data_source}},[_vm._v("\n        "+_vm._s(data_source)+"\n       ")])}),0)])]),_vm._v(" "),_c('div',{staticClass:"col col-4"},[_c('label',[_vm._v("Metric Type:\n      "),_c('select',{directives:[{name:"model",rawName:"v-model",value:(_vm.selected_metric_type),expression:"selected_metric_type"}],attrs:{"id":"metric_type"},on:{"change":[function($event){var $$selectedVal = Array.prototype.filter.call($event.target.options,function(o){return o.selected}).map(function(o){var val = "_value" in o ? o._value : o.value;return val}); _vm.selected_metric_type=$event.target.multiple ? $$selectedVal : $$selectedVal[0]},function($event){return _vm.getMetricsStatus()}]}},_vm._l((_vm.metadata['metric_types']),function(metric_type){return _c('option',{domProps:{"value":metric_type}},[_vm._v("\n        "+_vm._s(metric_type)+"\n       ")])}),0)])]),_vm._v(" "),_vm._m(0),_vm._v(" "),_c('div',{staticClass:"col col-4"},[_c('label',[_vm._v("Backend Status:\n      "),_c('select',{directives:[{name:"model",rawName:"v-model",value:(_vm.selected_backend_status),expression:"selected_backend_status"}],attrs:{"id":"metric_backend_status"},on:{"change":[function($event){var $$selectedVal = Array.prototype.filter.call($event.target.options,function(o){return o.selected}).map(function(o){var val = "_value" in o ? o._value : o.value;return val}); _vm.selected_backend_status=$event.target.multiple ? $$selectedVal : $$selectedVal[0]},function($event){return _vm.getMetricsStatus()}]}},[_c('option',{attrs:{"value":"all"}},[_vm._v("all")]),_vm._v(" "),_c('option',{attrs:{"value":"unimplemented"}},[_vm._v("unimplemented")]),_vm._v(" "),_c('option',{attrs:{"value":"implemented"}},[_vm._v("implemented")])])])]),_vm._v(" "),_c('div',{staticClass:"col col-4"},[_c('label',[_vm._v("Frontend Status:\n      "),_c('select',{directives:[{name:"model",rawName:"v-model",value:(_vm.selected_frontend_status),expression:"selected_frontend_status"}],attrs:{"id":"metric_frontend_status"},on:{"change":[function($event){var $$selectedVal = Array.prototype.filter.call($event.target.options,function(o){return o.selected}).map(function(o){var val = "_value" in o ? o._value : o.value;return val}); _vm.selected_frontend_status=$event.target.multiple ? $$selectedVal : $$selectedVal[0]},function($event){return _vm.getMetricsStatus()}]}},[_c('option',{attrs:{"value":"all"}},[_vm._v("all")]),_vm._v(" "),_c('option',{attrs:{"value":"unimplemented"}},[_vm._v("unimplemented")]),_vm._v(" "),_c('option',{attrs:{"value":"implemented"}},[_vm._v("implemented")])])])]),_vm._v(" "),_c('div',{staticClass:"col col-4"},[_c('label',[_vm._v("Defined:\n      "),_c('select',{directives:[{name:"model",rawName:"v-model",value:(_vm.selected_is_defined),expression:"selected_is_defined"}],attrs:{"id":"metric_is_defined"},on:{"change":[function($event){var $$selectedVal = Array.prototype.filter.call($event.target.options,function(o){return o.selected}).map(function(o){var val = "_value" in o ? o._value : o.value;return val}); _vm.selected_is_defined=$event.target.multiple ? $$selectedVal : $$selectedVal[0]},function($event){return _vm.getMetricsStatus()}]}},[_c('option',{attrs:{"value":"all"}},[_vm._v("all")]),_vm._v(" "),_c('option',{attrs:{"value":"true"}},[_vm._v("true")]),_vm._v(" "),_c('option',{attrs:{"value":"false"}},[_vm._v("false")])])])])]),_vm._v(" "),_c('p'),_vm._v(" "),_c('table',{staticClass:"is-responsive"},[_vm._m(1),_vm._v(" "),_c('tbody',{staticStyle:{"display":"block","height":"400px","overflow-y":"scroll","text-align":"center","background":"#eaeaea"}},_vm._l((_vm.metricsStatus),function(metric){return _c('tr',[_c('div',{staticStyle:{"overflow":"hidden"}},[_c('td',{staticStyle:{"width":"119px !important"},style:({ color: _vm.getBackendStatusColor(metric) })},[_vm._v(_vm._s(metric.backend_status))]),_vm._v(" "),_c('td',{staticStyle:{"width":"135px !important"},style:({ color: _vm.getFrontendStatusColor(metric) })},[_vm._v(_vm._s(metric.frontend_status))]),_vm._v(" "),(metric.url != '/')?[_c('td',{staticStyle:{"width":"170px !important"}},[_c('a',{attrs:{"href":metric.documentation_url}},[_vm._v(_vm._s(metric.display_name))])])]:[_c('td',{staticStyle:{"width":"170px !important"}},[_vm._v(_vm._s(metric.display_name))])],_vm._v(" "),_c('td',{staticStyle:{"width":"121px !important"}},[_vm._v(_vm._s(metric.group))]),_vm._v(" "),_c('td',{staticStyle:{"width":"569px !important"}},[_vm._v(_vm._s(metric.endpoint))]),_vm._v(" "),_c('td',{staticStyle:{"width":"120px !important"}},[_vm._v(_vm._s(metric.data_source))]),_vm._v(" "),_c('td',{staticStyle:{"width":"85px !important"}},[_vm._v(_vm._s(metric.metric_type))])],2)])}),0)])])])}
+__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"is-table-container"},[_c('div',{staticClass:"fullwidth"},[_c('augur-header')],1),_vm._v(" "),_c('section',[_c('h3',[_vm._v("CHAOSS Metrics Implementation Status")]),_vm._v(" "),_c('div',{staticClass:"row gutters"},[_c('div',{staticClass:"col col-4"},[_c('label',[_vm._v("Group:\n      "),_c('select',{directives:[{name:"model",rawName:"v-model",value:(_vm.selected_group),expression:"selected_group"}],attrs:{"id":"metric_group"},on:{"change":[function($event){var $$selectedVal = Array.prototype.filter.call($event.target.options,function(o){return o.selected}).map(function(o){var val = "_value" in o ? o._value : o.value;return val}); _vm.selected_group=$event.target.multiple ? $$selectedVal : $$selectedVal[0]},function($event){_vm.getMetricsStatus()}]}},_vm._l((_vm.metadata['groups']),function(group){return _c('option',{domProps:{"value":group}},[_vm._v("\n        "+_vm._s(group)+"\n       ")])}))])]),_vm._v(" "),_c('div',{staticClass:"col col-4"},[_c('label',[_vm._v("Source:\n      "),_c('select',{directives:[{name:"model",rawName:"v-model",value:(_vm.selected_source),expression:"selected_source"}],attrs:{"id":"metric_source"},on:{"change":[function($event){var $$selectedVal = Array.prototype.filter.call($event.target.options,function(o){return o.selected}).map(function(o){var val = "_value" in o ? o._value : o.value;return val}); _vm.selected_source=$event.target.multiple ? $$selectedVal : $$selectedVal[0]},function($event){_vm.getMetricsStatus()}]}},_vm._l((_vm.metadata['data_sources']),function(data_source){return _c('option',{domProps:{"value":data_source}},[_vm._v("\n        "+_vm._s(data_source)+"\n       ")])}))])]),_vm._v(" "),_c('div',{staticClass:"col col-4"},[_c('label',[_vm._v("Metric Type:\n      "),_c('select',{directives:[{name:"model",rawName:"v-model",value:(_vm.selected_metric_type),expression:"selected_metric_type"}],attrs:{"id":"metric_type"},on:{"change":[function($event){var $$selectedVal = Array.prototype.filter.call($event.target.options,function(o){return o.selected}).map(function(o){var val = "_value" in o ? o._value : o.value;return val}); _vm.selected_metric_type=$event.target.multiple ? $$selectedVal : $$selectedVal[0]},function($event){_vm.getMetricsStatus()}]}},_vm._l((_vm.metadata['metric_types']),function(metric_type){return _c('option',{domProps:{"value":metric_type}},[_vm._v("\n        "+_vm._s(metric_type)+"\n       ")])}))])]),_vm._v(" "),_vm._m(0),_vm._v(" "),_c('div',{staticClass:"col col-4"},[_c('label',[_vm._v("Backend Status:\n      "),_c('select',{directives:[{name:"model",rawName:"v-model",value:(_vm.selected_backend_status),expression:"selected_backend_status"}],attrs:{"id":"metric_backend_status"},on:{"change":[function($event){var $$selectedVal = Array.prototype.filter.call($event.target.options,function(o){return o.selected}).map(function(o){var val = "_value" in o ? o._value : o.value;return val}); _vm.selected_backend_status=$event.target.multiple ? $$selectedVal : $$selectedVal[0]},function($event){_vm.getMetricsStatus()}]}},[_c('option',{attrs:{"value":"all"}},[_vm._v("all")]),_vm._v(" "),_c('option',{attrs:{"value":"unimplemented"}},[_vm._v("unimplemented")]),_vm._v(" "),_c('option',{attrs:{"value":"implemented"}},[_vm._v("implemented")])])])]),_vm._v(" "),_c('div',{staticClass:"col col-4"},[_c('label',[_vm._v("Frontend Status:\n      "),_c('select',{directives:[{name:"model",rawName:"v-model",value:(_vm.selected_frontend_status),expression:"selected_frontend_status"}],attrs:{"id":"metric_frontend_status"},on:{"change":[function($event){var $$selectedVal = Array.prototype.filter.call($event.target.options,function(o){return o.selected}).map(function(o){var val = "_value" in o ? o._value : o.value;return val}); _vm.selected_frontend_status=$event.target.multiple ? $$selectedVal : $$selectedVal[0]},function($event){_vm.getMetricsStatus()}]}},[_c('option',{attrs:{"value":"all"}},[_vm._v("all")]),_vm._v(" "),_c('option',{attrs:{"value":"unimplemented"}},[_vm._v("unimplemented")]),_vm._v(" "),_c('option',{attrs:{"value":"implemented"}},[_vm._v("implemented")])])])]),_vm._v(" "),_c('div',{staticClass:"col col-4"},[_c('label',[_vm._v("Defined:\n      "),_c('select',{directives:[{name:"model",rawName:"v-model",value:(_vm.selected_is_defined),expression:"selected_is_defined"}],attrs:{"id":"metric_is_defined"},on:{"change":[function($event){var $$selectedVal = Array.prototype.filter.call($event.target.options,function(o){return o.selected}).map(function(o){var val = "_value" in o ? o._value : o.value;return val}); _vm.selected_is_defined=$event.target.multiple ? $$selectedVal : $$selectedVal[0]},function($event){_vm.getMetricsStatus()}]}},[_c('option',{attrs:{"value":"all"}},[_vm._v("all")]),_vm._v(" "),_c('option',{attrs:{"value":"true"}},[_vm._v("true")]),_vm._v(" "),_c('option',{attrs:{"value":"false"}},[_vm._v("false")])])])])]),_vm._v(" "),_c('p'),_vm._v(" "),_c('table',{staticClass:"is-responsive"},[_vm._m(1),_vm._v(" "),_c('tbody',{staticStyle:{"display":"block","height":"400px","overflow-y":"scroll","text-align":"center","background":"#eaeaea"}},_vm._l((_vm.metricsStatus),function(metric){return _c('tr',[_c('div',{staticStyle:{"overflow":"hidden"}},[_c('td',{staticStyle:{"width":"119px !important"},style:({ color: _vm.getBackendStatusColor(metric) })},[_vm._v(_vm._s(metric.backend_status))]),_vm._v(" "),_c('td',{staticStyle:{"width":"135px !important"},style:({ color: _vm.getFrontendStatusColor(metric) })},[_vm._v(_vm._s(metric.frontend_status))]),_vm._v(" "),(metric.url != '/')?[_c('td',{staticStyle:{"width":"170px !important"}},[_c('a',{attrs:{"href":metric.documentation_url}},[_vm._v(_vm._s(metric.display_name))])])]:[_c('td',{staticStyle:{"width":"170px !important"}},[_vm._v(_vm._s(metric.display_name))])],_vm._v(" "),_c('td',{staticStyle:{"width":"121px !important"}},[_vm._v(_vm._s(metric.group))]),_vm._v(" "),_c('td',{staticStyle:{"width":"569px !important"}},[_vm._v(_vm._s(metric.endpoint))]),_vm._v(" "),_c('td',{staticStyle:{"width":"120px !important"}},[_vm._v(_vm._s(metric.data_source))]),_vm._v(" "),_c('td',{staticStyle:{"width":"85px !important"}},[_vm._v(_vm._s(metric.metric_type))])],2)])}))])])])}
 __vue__options__.staticRenderFns = [function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"col col-12"},[_c('br')])},function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('thead',{staticStyle:{"display":"block"}},[_c('tr',{staticStyle:{"font-weight":"600","text-align":"center"}},[_c('td',{staticStyle:{"width":"119px !important"}},[_vm._v("Backend Status")]),_vm._v(" "),_c('td',{staticStyle:{"width":"135px !important"}},[_vm._v("Frontend Status")]),_vm._v(" "),_c('td',{staticStyle:{"width":"170px !important"}},[_vm._v("Name")]),_vm._v(" "),_c('td',{staticStyle:{"width":"121px !important"}},[_vm._v("Group")]),_vm._v(" "),_c('td',{staticStyle:{"width":"569px !important"}},[_vm._v("Endpoint")]),_vm._v(" "),_c('td',{staticStyle:{"width":"120px !important"}},[_vm._v("Source")]),_vm._v(" "),_c('td',{staticStyle:{"width":"85px !important"}},[_vm._v("Metric Type")])])])}]
 __vue__options__._scopeId = "data-v-99cabfb0"
 if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
@@ -2084,6 +2084,7 @@ if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
 "use strict";
 
 window.onload = function () {
+    console.log("PATHNAME " + process.cwd());
     var URL = String(window.location);
     var URLements = URL.split("/");
     console.log(URLements);
@@ -2102,6 +2103,7 @@ window.onload = function () {
             request.open('GET', 'https://bestpractices.coreinfrastructure.org/projects.json?pq=' + augURL, true);
             request.onload = function () {
                 var data = JSON.parse(this.response)[0];
+                console.log(data);
                 if (data != undefined) {
                     var badgeURL = 'https://bestpractices.coreinfrastructure.org/projects/' + data.id + '/badge';
 
@@ -2123,84 +2125,78 @@ window.onload = function () {
         loader();
         request.send();
     });
+    function readJSONFile() {
+
+        return "[[[\"PackageName\", \"rails\", \"SPDXID\", \"SPDXRef-package-rails-c46e-c774c238\", \"\", \"\", \"PackageFileName\", \"rails\", \"PackageSupplier\", \"NOASSERTION\", \"PackageOriginator\", \"NOASSERTION\", \"PackageDownloadLocation\", \"NOASSERTION\", \"PackageVerificationCode\", \"c46e4a381bfa07e7c9c4a1820f4f2d7db0004c65\", \"\", \"\", \"PackageHomePage\", \"NOASSERTION\", \"PackageLicenseConcluded\", \"NOASSERTION\", \"PackageLicenseDeclared\", \"NOASSERTION\", \"PackageLicenseComments\", \"\", \"PackageCopyrightText\", \"NOASSERTION\", \"PackageSummary\", \"\", \"PackageDescription\", \"\", \"PackageComment\", \" \"]], [[[\"PackageLicenseInfoFromFiles\", \"CC-BY-SA-4.0\"], [\"PackageLicenseInfoFromFiles\", \"LicenseRef-BSD\"], [\"PackageLicenseInfoFromFiles\", \"LicenseRef-Dual-license\"], [\"PackageLicenseInfoFromFiles\", \"LicenseRef-GPL\"], [\"PackageLicenseInfoFromFiles\", \"LicenseRef-See-URL\"], [\"PackageLicenseInfoFromFiles\", \"LicenseRef-See-doc.OTHER\"], [\"PackageLicenseInfoFromFiles\", \"LicenseRef-See file\"], [\"PackageLicenseInfoFromFiles\", \"MIT\"], [\"PackageLicenseInfoFromFiles\", \"Ruby\"]]]]";
+    }
     document.getElementById("lcBtn").addEventListener("click", function () {
-        document.getElementById("lcBtn").disabled = true;
-        document.getElementById("lcBtn").innerHTML = "Scanning the repository. This may take some time...";
-        console.log("SCAN STATE: " + localStorage.getItem("lRun"));
-        if (localStorage.getItem("lRun") != "Running") {
-            localStorage.setItem("lRun", "Running");
-            window.AugurAPI.getLicenseInfo(owner, repo).then(function (data) {
-                populate = document.getElementById("populate");
-                populate.parentNode.removeChild(populate);
+        readJSONFile().then(function (data) {
+            populate = document.getElementById("populate");
+            populate.parentNode.removeChild(populate);
 
-                var column = [];
-                column.push("Tag");
-                column.push("Info");
-                tableID = document.getElementById("licenseTable");
+            var column = [];
+            column.push("Tag");
+            column.push("Info");
+            tableID = document.getElementById("licenseTable");
 
-                var tr = tableID.insertRow(0);
-                for (var i = 0; i < 2; i++) {
-                    var th = document.createElement("th");
-                    th.innerHTML = column[i];
-                    tr.appendChild(th);
-                }
-                console.log(data);
-                var g = 0;
-                var m = 0;
-                for (var k in data[0]) {
-                    if (k) {
-                        tr = tableID.insertRow(g + 1);
-                        for (var j = 0; j < 2; j++) {
-                            var tab = tr.insertCell(j - 1);
-                            var info = data[0][k];
-                            if (m % 2 == 0) {
-                                tab.style.backgroundColor = "#EAEAEA";
-                            }
-                            if (j % 2 != 0) {
-                                tab.innerHTML = k;
-                            } else {
-                                if (info == "NOASSERTION" || !info) {
-                                    info = "None provided";
-                                }
-                                tab.innerHTML = info;
-                            }
-                        }
-                        m++;
-                        g++;
-                    }
-                }
-                tableLI = document.getElementById("licenseTableLI");
-
-                var tr = tableLI.insertRow(0);
+            var tr = tableID.insertRow(0);
+            for (var i = 0; i < 2; i++) {
                 var th = document.createElement("th");
-                th.innerHTML = "Licenses identified";
+                th.innerHTML = column[i];
                 tr.appendChild(th);
-                g = 0;
-                m = 0;
-                for (var n in data[1]) {
-                    tr = tableLI.insertRow(g + 1);
-                    var tabTwo = tr.insertCell(-1);
-                    tabTwo.innerHTML = data[1][n];
-                    if (m % 2 == 0) {
-                        tabTwo.style.backgroundColor = "#EAEAEA";
+            }
+            console.log(data);
+            var g = 0;
+            var m = 0;
+            for (var k in data[0]) {
+                if (k) {
+                    tr = tableID.insertRow(g + 1);
+                    for (var j = 0; j < 2; j++) {
+                        var tab = tr.insertCell(j - 1);
+                        var info = data[0][k];
+                        if (m % 2 == 0) {
+                            tab.style.backgroundColor = "#EAEAEA";
+                        }
+                        if (j % 2 != 0) {
+                            tab.innerHTML = k;
+                        } else {
+                            if (info == "NOASSERTION" || !info) {
+                                info = "None provided";
+                            }
+                            tab.innerHTML = info;
+                        }
                     }
                     m++;
                     g++;
                 }
-                console.log("Scanned. setting SCAN STATE...");
-                localStorage.setItem("lRun", "Stopped");
-                document.getElementById("lcBtn").style.visibility = "hidden";
-            }).then(function () {}, function (error) {
-                document.getElementById("lcBtn").disabled = false;
+            }
+            tableLI = document.getElementById("licenseTableLI");
 
-                localStorage.setItem("lRun", "Stopped");
-                document.getElementById("lcBtn").innerHTML = "Error occurred when processing license information. Please try again.";
-            });
-        } else {
+            var tr = tableLI.insertRow(0);
+            var th = document.createElement("th");
+            th.innerHTML = "Licenses identified";
+            tr.appendChild(th);
+            g = 0;
+            m = 0;
+            for (var n in data[1]) {
+                tr = tableLI.insertRow(g + 1);
+                var tabTwo = tr.insertCell(-1);
+                tabTwo.innerHTML = data[1][n];
+                if (m % 2 == 0) {
+                    tabTwo.style.backgroundColor = "#EAEAEA";
+                }
+                m++;
+                g++;
+            }
+            console.log("Scanned. setting SCAN STATE...");
             localStorage.setItem("lRun", "Stopped");
-            localStorage.setItem("refresh", "true");
-            location.reload();
-        }
+            document.getElementById("lcBtn").style.visibility = "hidden";
+        }).then(function () {}, function (error) {
+            document.getElementById("lcBtn").disabled = false;
+
+            localStorage.setItem("lRun", "Stopped");
+            document.getElementById("lcBtn").innerHTML = "Error occurred when processing license information. Please try again.";
+        });
     });
 };
 module.exports = {
@@ -2225,7 +2221,153 @@ if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
   if (!module.hot.data) {
     hotAPI.createRecord("data-v-0abc386c", __vue__options__)
   } else {
-    hotAPI.reload("data-v-0abc386c", __vue__options__)
+    hotAPI.rerender("data-v-0abc386c", __vue__options__)
+  }
+})()}
+});
+
+;require.register("components/RiskCardOrig.vue", function(exports, require, module) {
+;(function(){
+"use strict";
+
+window.onload = function () {
+    console.log("PATHNAME " + process.cwd());
+    var URL = String(window.location);
+    var URLements = URL.split("/");
+    console.log(URLements);
+    var owner = URLements[URLements.length - 3];
+    var repo = URLements[URLements.length - 2];
+    console.log(owner + "/" + repo);
+    document.getElementById("base").innerHTML = owner + "/" + repo;
+    document.getElementById("ciiBtn").addEventListener("click", function () {
+        document.getElementById("overcii").style.display = "block";
+        document.getElementById("overcii").class = "row";
+        document.getElementById("ciiBtn").style.visibility = "hidden";
+        var request = new XMLHttpRequest();
+        function loader() {
+            var basestr = document.getElementById("base").innerHTML;
+            var augURL = 'https://github.com/' + basestr;
+            request.open('GET', 'https://bestpractices.coreinfrastructure.org/projects.json?pq=' + augURL, true);
+            request.onload = function () {
+                var data = JSON.parse(this.response)[0];
+                console.log(data);
+                if (data != undefined) {
+                    var badgeURL = 'https://bestpractices.coreinfrastructure.org/projects/' + data.id + '/badge';
+
+                    document.getElementById("CIIbadge").src = badgeURL;
+                    if (data.badge_percentage_0 < 100) {
+                        document.getElementById("CII").innerHTML = data.name + ' is currently not passing CII Best Practices.';
+                    } else if (data.badge_percentage_1 < 100) {
+                        document.getElementById("CII").innerHTML = data.name + ' is currently passing CII Best Practices.';
+                    } else if (data.badge_percentage_2 < 100) {
+                        document.getElementById("CII").innerHTML = data.name + ' is currently passing CII Best Practices. This project has a siver status.';
+                    } else if (data.badge_percentage_2 == 100) {
+                        document.getElementById("CII").innerHTML = data.name + ' is currently passing CII Best Practices. <br>' + data.name + ' maintains a gold status.';
+                    }
+                } else {
+                    document.getElementById("CII").innerHTML = 'No best practice data for this repository.';
+                }
+            };
+        }
+        loader();
+        request.send();
+    });
+    document.getElementById("lcBtn").addEventListener("click", function () {
+        var AugurAPI = require('AugurAPI').default;
+        var augurAPI = new AugurAPI();
+        console.log(augurAPI);
+        augurAPI.getLicenseInfo().then(function (data) {
+            populate = document.getElementById("populate");
+            populate.parentNode.removeChild(populate);
+
+            var column = [];
+            column.push("Tag");
+            column.push("Info");
+            tableID = document.getElementById("licenseTable");
+
+            var tr = tableID.insertRow(0);
+            for (var i = 0; i < 2; i++) {
+                var th = document.createElement("th");
+                th.innerHTML = column[i];
+                tr.appendChild(th);
+            }
+            console.log(data);
+            var g = 0;
+            var m = 0;
+            for (var k in data[0]) {
+                if (k) {
+                    tr = tableID.insertRow(g + 1);
+                    for (var j = 0; j < 2; j++) {
+                        var tab = tr.insertCell(j - 1);
+                        var info = data[0][k];
+                        if (m % 2 == 0) {
+                            tab.style.backgroundColor = "#EAEAEA";
+                        }
+                        if (j % 2 != 0) {
+                            tab.innerHTML = k;
+                        } else {
+                            if (info == "NOASSERTION" || !info) {
+                                info = "None provided";
+                            }
+                            tab.innerHTML = info;
+                        }
+                    }
+                    m++;
+                    g++;
+                }
+            }
+            tableLI = document.getElementById("licenseTableLI");
+
+            var tr = tableLI.insertRow(0);
+            var th = document.createElement("th");
+            th.innerHTML = "Licenses identified";
+            tr.appendChild(th);
+            g = 0;
+            m = 0;
+            for (var n in data[1]) {
+                tr = tableLI.insertRow(g + 1);
+                var tabTwo = tr.insertCell(-1);
+                tabTwo.innerHTML = data[1][n];
+                if (m % 2 == 0) {
+                    tabTwo.style.backgroundColor = "#EAEAEA";
+                }
+                m++;
+                g++;
+            }
+            console.log("Scanned. setting SCAN STATE...");
+            localStorage.setItem("lRun", "Stopped");
+            document.getElementById("lcBtn").style.visibility = "hidden";
+        }).then(function () {}, function (error) {
+            document.getElementById("lcBtn").disabled = false;
+
+            localStorage.setItem("lRun", "Stopped");
+            document.getElementById("lcBtn").innerHTML = "Error occurred when processing license information. Please try again.";
+        });
+    });
+};
+module.exports = {
+    data: function data() {
+        return {
+            colors: ["#FF3647", "#4736FF", "#3cb44b", "#ffe119", "#f58231", "#911eb4", "#42d4f4", "#f032e6"]
+        };
+    },
+
+    components: {}
+};
+})()
+if (module.exports.__esModule) module.exports = module.exports.default
+var __vue__options__ = (typeof module.exports === "function"? module.exports.options: module.exports)
+if (__vue__options__.functional) {console.error("[vueify] functional components are not supported and should be defined in plain js files using render functions.")}
+__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('section',[_c('h1',[_vm._v("Risk")]),_vm._v(" "),_c('div',{staticStyle:{"display":"inline-block"}},[_c('h2',{staticStyle:{"display":"inline-block","color":"black !important"},attrs:{"id":"base"}},[_vm._v(_vm._s(_vm.$store.state.baseRepo))]),_vm._v(" "),(_vm.$store.state.comparedRepos.length > 0)?_c('h2',{staticClass:"repolisting",staticStyle:{"display":"inline-block"}},[_vm._v(" compared to: ")]):_vm._e(),_vm._v(" "),_vm._l((_vm.$store.state.comparedRepos),function(repo,index){return _c('h2',{staticStyle:{"display":"inline-block"}},[_c('span',{staticClass:"repolisting",style:({ 'color': _vm.colors[index] }),attrs:{"id":"compared"}},[_vm._v(" "+_vm._s(repo)+" ")])])})],2),_vm._v(" "),_c('h2',{staticClass:"col",staticStyle:{"margin-bottom":"20px"}},[_vm._v("CII Best Practices")]),_vm._v(" "),_c('button',{staticStyle:{"border":"2px solid black","width":"100%"},attrs:{"id":"ciiBtn"}},[_vm._v("Retrieve CII information")]),_vm._v(" "),_vm._m(0),_vm._v(" "),_vm._m(1)])}
+__vue__options__.staticRenderFns = [function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticStyle:{"text-align":"center","width":"100%","display":"none"},attrs:{"id":"overcii"}},[_c('img',{staticClass:"col",staticStyle:{"width":"419px","height":"146px","margin-left":"auto","margin-right":"auto"},attrs:{"width":"200px","height":"200px","src":"https://i.ibb.co/n8f7NjX/CIITPARENT.png","href":"https://bestpractices.coreinfrastructure.org/en"}}),_vm._v(" "),_c('br'),_vm._v(" "),_c('div',{attrs:{"id":"recloadContainer"}},[_c('div',{staticClass:"col-6",staticStyle:{"margin-left":"auto","margin-right":"auto","margin-top":"20px"},attrs:{"id":"CIIbp"}},[_c('div',{attrs:{"size":"total"}},[_c('img',{staticStyle:{"transform":"scale(2)"},attrs:{"id":"CIIbadge"}}),_vm._v(" "),_c('br'),_vm._v(" "),_c('div',{staticClass:"col-6",staticStyle:{"margin-left":"auto","margin-right":"auto","margin-top":"20px"},attrs:{"id":"CIIbp"}},[_c('div',{attrs:{"size":"total"}},[_c('img',{staticStyle:{"height":"50px"},attrs:{"id":"CIIbadge"}}),_vm._v(" "),_c('br'),_vm._v(" "),_c('h2',{attrs:{"id":"CII"}})])])])])])])},function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"row"},[_c('button',{staticStyle:{"border":"2px solid black","width":"600px"},attrs:{"id":"lcBtn"}},[_vm._v("Scan this repository for license information")]),_vm._v(" "),_c('p',{attrs:{"id":"populate"}}),_vm._v(" "),_c('p',{attrs:{"id":"licenseInfo"}}),_vm._v(" "),_c('table',{attrs:{"id":"licenseTable"}},[_c('tbody')]),_vm._v(" "),_c('table',{attrs:{"id":"licenseTableLI"}},[_c('tbody')])])}]
+if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-380e8f66", __vue__options__)
+  } else {
+    hotAPI.reload("data-v-380e8f66", __vue__options__)
   }
 })()}
 });
@@ -2365,7 +2507,7 @@ module.exports = {
 if (module.exports.__esModule) module.exports = module.exports.default
 var __vue__options__ = (typeof module.exports === "function"? module.exports.options: module.exports)
 if (__vue__options__.functional) {console.error("[vueify] functional components are not supported and should be defined in plain js files using render functions.")}
-__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',[_c('v-dialog',{attrs:{"max-width":"500px"},model:{value:(_vm.dialog),callback:function ($$v) {_vm.dialog=$$v},expression:"dialog"}},[_c('v-btn',{staticClass:"mb-2",attrs:{"slot":"activator","color":"primary","dark":""},slot:"activator"},[_vm._v("New Item")]),_vm._v(" "),_c('v-card',[_c('v-card-title',[_c('span',{staticClass:"headline"},[_vm._v(_vm._s(_vm.formTitle))])]),_vm._v(" "),_c('v-card-text',[_c('v-container',{attrs:{"grid-list-md":""}},[_c('v-layout',{attrs:{"wrap":""}},[_c('v-flex',{attrs:{"xs12":"","sm6":"","md4":""}},[_c('v-text-field',{attrs:{"label":"Dessert name"},model:{value:(_vm.editedItem.name),callback:function ($$v) {_vm.$set(_vm.editedItem, "name", $$v)},expression:"editedItem.name"}})],1),_vm._v(" "),_c('v-flex',{attrs:{"xs12":"","sm6":"","md4":""}},[_c('v-text-field',{attrs:{"label":"Calories"},model:{value:(_vm.editedItem.calories),callback:function ($$v) {_vm.$set(_vm.editedItem, "calories", $$v)},expression:"editedItem.calories"}})],1),_vm._v(" "),_c('v-flex',{attrs:{"xs12":"","sm6":"","md4":""}},[_c('v-text-field',{attrs:{"label":"Fat (g)"},model:{value:(_vm.editedItem.fat),callback:function ($$v) {_vm.$set(_vm.editedItem, "fat", $$v)},expression:"editedItem.fat"}})],1),_vm._v(" "),_c('v-flex',{attrs:{"xs12":"","sm6":"","md4":""}},[_c('v-text-field',{attrs:{"label":"Carbs (g)"},model:{value:(_vm.editedItem.carbs),callback:function ($$v) {_vm.$set(_vm.editedItem, "carbs", $$v)},expression:"editedItem.carbs"}})],1),_vm._v(" "),_c('v-flex',{attrs:{"xs12":"","sm6":"","md4":""}},[_c('v-text-field',{attrs:{"label":"Protein (g)"},model:{value:(_vm.editedItem.protein),callback:function ($$v) {_vm.$set(_vm.editedItem, "protein", $$v)},expression:"editedItem.protein"}})],1)],1)],1)],1),_vm._v(" "),_c('v-card-actions',[_c('v-spacer'),_vm._v(" "),_c('v-btn',{attrs:{"color":"blue darken-1","flat":""},nativeOn:{"click":function($event){return _vm.close($event)}}},[_vm._v("Cancel")]),_vm._v(" "),_c('v-btn',{attrs:{"color":"blue darken-1","flat":""},nativeOn:{"click":function($event){return _vm.save($event)}}},[_vm._v("Save")])],1)],1)],1),_vm._v(" "),_c('v-data-table',{staticClass:"elevation-1",attrs:{"headers":_vm.headers,"items":_vm.desserts,"hide-actions":""},scopedSlots:_vm._u([{key:"items",fn:function(props){return [_c('td',[_vm._v(_vm._s(props.item.name))]),_vm._v(" "),_c('td',{staticClass:"text-xs-right"},[_vm._v(_vm._s(props.item.calories))]),_vm._v(" "),_c('td',{staticClass:"text-xs-right"},[_vm._v(_vm._s(props.item.fat))]),_vm._v(" "),_c('td',{staticClass:"text-xs-right"},[_vm._v(_vm._s(props.item.carbs))]),_vm._v(" "),_c('td',{staticClass:"text-xs-right"},[_vm._v(_vm._s(props.item.protein))]),_vm._v(" "),_c('td',{staticClass:"justify-center layout px-0"},[_c('v-btn',{staticClass:"mx-0",attrs:{"icon":""},on:{"click":function($event){return _vm.editItem(props.item)}}},[_c('v-icon',{attrs:{"color":"teal"}},[_vm._v("edit")])],1),_vm._v(" "),_c('v-btn',{staticClass:"mx-0",attrs:{"icon":""},on:{"click":function($event){return _vm.deleteItem(props.item)}}},[_c('v-icon',{attrs:{"color":"pink"}},[_vm._v("delete")])],1)],1)]}}])})],1)}
+__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',[_c('v-dialog',{attrs:{"max-width":"500px"},model:{value:(_vm.dialog),callback:function ($$v) {_vm.dialog=$$v},expression:"dialog"}},[_c('v-btn',{staticClass:"mb-2",attrs:{"slot":"activator","color":"primary","dark":""},slot:"activator"},[_vm._v("New Item")]),_vm._v(" "),_c('v-card',[_c('v-card-title',[_c('span',{staticClass:"headline"},[_vm._v(_vm._s(_vm.formTitle))])]),_vm._v(" "),_c('v-card-text',[_c('v-container',{attrs:{"grid-list-md":""}},[_c('v-layout',{attrs:{"wrap":""}},[_c('v-flex',{attrs:{"xs12":"","sm6":"","md4":""}},[_c('v-text-field',{attrs:{"label":"Dessert name"},model:{value:(_vm.editedItem.name),callback:function ($$v) {_vm.$set(_vm.editedItem, "name", $$v)},expression:"editedItem.name"}})],1),_vm._v(" "),_c('v-flex',{attrs:{"xs12":"","sm6":"","md4":""}},[_c('v-text-field',{attrs:{"label":"Calories"},model:{value:(_vm.editedItem.calories),callback:function ($$v) {_vm.$set(_vm.editedItem, "calories", $$v)},expression:"editedItem.calories"}})],1),_vm._v(" "),_c('v-flex',{attrs:{"xs12":"","sm6":"","md4":""}},[_c('v-text-field',{attrs:{"label":"Fat (g)"},model:{value:(_vm.editedItem.fat),callback:function ($$v) {_vm.$set(_vm.editedItem, "fat", $$v)},expression:"editedItem.fat"}})],1),_vm._v(" "),_c('v-flex',{attrs:{"xs12":"","sm6":"","md4":""}},[_c('v-text-field',{attrs:{"label":"Carbs (g)"},model:{value:(_vm.editedItem.carbs),callback:function ($$v) {_vm.$set(_vm.editedItem, "carbs", $$v)},expression:"editedItem.carbs"}})],1),_vm._v(" "),_c('v-flex',{attrs:{"xs12":"","sm6":"","md4":""}},[_c('v-text-field',{attrs:{"label":"Protein (g)"},model:{value:(_vm.editedItem.protein),callback:function ($$v) {_vm.$set(_vm.editedItem, "protein", $$v)},expression:"editedItem.protein"}})],1)],1)],1)],1),_vm._v(" "),_c('v-card-actions',[_c('v-spacer'),_vm._v(" "),_c('v-btn',{attrs:{"color":"blue darken-1","flat":""},nativeOn:{"click":function($event){return _vm.close($event)}}},[_vm._v("Cancel")]),_vm._v(" "),_c('v-btn',{attrs:{"color":"blue darken-1","flat":""},nativeOn:{"click":function($event){return _vm.save($event)}}},[_vm._v("Save")])],1)],1)],1),_vm._v(" "),_c('v-data-table',{staticClass:"elevation-1",attrs:{"headers":_vm.headers,"items":_vm.desserts,"hide-actions":""},scopedSlots:_vm._u([{key:"items",fn:function(props){return [_c('td',[_vm._v(_vm._s(props.item.name))]),_vm._v(" "),_c('td',{staticClass:"text-xs-right"},[_vm._v(_vm._s(props.item.calories))]),_vm._v(" "),_c('td',{staticClass:"text-xs-right"},[_vm._v(_vm._s(props.item.fat))]),_vm._v(" "),_c('td',{staticClass:"text-xs-right"},[_vm._v(_vm._s(props.item.carbs))]),_vm._v(" "),_c('td',{staticClass:"text-xs-right"},[_vm._v(_vm._s(props.item.protein))]),_vm._v(" "),_c('td',{staticClass:"justify-center layout px-0"},[_c('v-btn',{staticClass:"mx-0",attrs:{"icon":""},on:{"click":function($event){_vm.editItem(props.item)}}},[_c('v-icon',{attrs:{"color":"teal"}},[_vm._v("edit")])],1),_vm._v(" "),_c('v-btn',{staticClass:"mx-0",attrs:{"icon":""},on:{"click":function($event){_vm.deleteItem(props.item)}}},[_c('v-icon',{attrs:{"color":"pink"}},[_vm._v("delete")])],1)],1)]}}])})],1)}
 __vue__options__.staticRenderFns = []
 if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -4915,7 +5057,7 @@ exports.default = {
 if (module.exports.__esModule) module.exports = module.exports.default
 var __vue__options__ = (typeof module.exports === "function"? module.exports.options: module.exports)
 if (__vue__options__.functional) {console.error("[vueify] functional components are not supported and should be defined in plain js files using render functions.")}
-__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{ref:"holder"},[_c('h3',[_vm._v("Lines of code added by the top 10 authors")]),_vm._v(" "),_c('table',{staticClass:"lines-of-code-table"},[_c('thead',[_c('tr',[_c('th',[_vm._v("Author")]),_vm._v(" "),_vm._l((_vm.years),function(year){return (!_vm.setYear)?_c('th',{staticClass:"clickable-header",on:{"click":function($event){_vm.setYear = year}}},[_vm._v(_vm._s(year))]):_vm._e()}),_vm._v(" "),_vm._l((_vm.monthNames),function(month){return (_vm.setYear)?_c('th',[_vm._v(_vm._s(month))]):_vm._e()}),_vm._v(" "),(!_vm.setYear)?_c('th',[_vm._v("Total all time")]):_vm._e(),_vm._v(" "),(_vm.setYear)?_c('th',{on:{"click":function($event){_vm.setYear = 0}}},[_vm._v(_vm._s(_vm.setYear))]):_vm._e()],2)]),_vm._v(" "),_c('tbody',_vm._l((_vm.contributors.slice(0, 10)),function(contributor){return _c('tr',[_c('td',[_vm._v(_vm._s(contributor.author_email))]),_vm._v(" "),_vm._l((_vm.years),function(year){return (!_vm.setYear)?_c('td',[_vm._v(_vm._s((contributor[year]) ? contributor[year].additions || 0 : 0))]):_vm._e()}),_vm._v(" "),_vm._l((_vm.monthDecimals),function(month){return (_vm.setYear)?_c('td',[_vm._v(_vm._s((contributor[_vm.setYear + '-' + month]) ? contributor[_vm.setYear + '-' + month].additions || 0 : 0))]):_vm._e()}),_vm._v(" "),(!_vm.setYear)?_c('td',[_vm._v(_vm._s(contributor.additions))]):_vm._e(),_vm._v(" "),(_vm.setYear)?_c('td',[_vm._v(_vm._s((contributor[_vm.setYear]) ? contributor[_vm.setYear].additions || 0 : 0))]):_vm._e()],2)}),0)]),_vm._v(" "),_c('br'),_vm._v(" "),_c('h3',[_vm._v("Lines of code added by the top 5 organizations")]),_vm._v(" "),_c('table',{staticClass:"lines-of-code-table"},[_c('thead',[_c('tr',[_c('th',[_vm._v("Author")]),_vm._v(" "),_vm._l((_vm.years),function(year){return (!_vm.setYear)?_c('th',{staticClass:"clickable-header",on:{"click":function($event){_vm.setYear = year}}},[_vm._v(_vm._s(year))]):_vm._e()}),_vm._v(" "),_vm._l((_vm.monthNames),function(month){return (_vm.setYear)?_c('th',[_vm._v(_vm._s(month))]):_vm._e()}),_vm._v(" "),(!_vm.setYear)?_c('th',[_vm._v("Total all time")]):_vm._e(),_vm._v(" "),(_vm.setYear)?_c('th',{staticClass:"clickable-header",on:{"click":function($event){_vm.setYear = _vm.year}}},[_vm._v(_vm._s(_vm.setYear))]):_vm._e()],2)]),_vm._v(" "),_c('tbody',_vm._l((_vm.organizations.slice(0, 10)),function(organization){return _c('tr',[_c('td',[_vm._v(_vm._s(organization.name))]),_vm._v(" "),_vm._l((_vm.years),function(year){return (!_vm.setYear)?_c('td',[_vm._v(_vm._s((organization[year]) ? organization[year].additions || 0 : 0))]):_vm._e()}),_vm._v(" "),_vm._l((_vm.monthDecimals),function(month){return (_vm.setYear)?_c('td',[_vm._v(_vm._s((organization[_vm.setYear + '-' + month]) ? organization[_vm.setYear + '-' + month].additions || 0 : 0))]):_vm._e()}),_vm._v(" "),(!_vm.setYear)?_c('td',[_vm._v(_vm._s(organization.additions))]):_vm._e(),_vm._v(" "),(_vm.setYear)?_c('td',[_vm._v(_vm._s((organization[_vm.setYear]) ? organization[_vm.setYear].additions || 0 : 0))]):_vm._e()],2)}),0)]),_vm._v(" "),_c('p',[_vm._v(" "+_vm._s(_vm.chart)+" ")])])}
+__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{ref:"holder"},[_c('h3',[_vm._v("Lines of code added by the top 10 authors")]),_vm._v(" "),_c('table',{staticClass:"lines-of-code-table"},[_c('thead',[_c('tr',[_c('th',[_vm._v("Author")]),_vm._v(" "),_vm._l((_vm.years),function(year){return (!_vm.setYear)?_c('th',{staticClass:"clickable-header",on:{"click":function($event){_vm.setYear = year}}},[_vm._v(_vm._s(year))]):_vm._e()}),_vm._v(" "),_vm._l((_vm.monthNames),function(month){return (_vm.setYear)?_c('th',[_vm._v(_vm._s(month))]):_vm._e()}),_vm._v(" "),(!_vm.setYear)?_c('th',[_vm._v("Total all time")]):_vm._e(),_vm._v(" "),(_vm.setYear)?_c('th',{on:{"click":function($event){_vm.setYear = 0}}},[_vm._v(_vm._s(_vm.setYear))]):_vm._e()],2)]),_vm._v(" "),_c('tbody',_vm._l((_vm.contributors.slice(0, 10)),function(contributor){return _c('tr',[_c('td',[_vm._v(_vm._s(contributor.author_email))]),_vm._v(" "),_vm._l((_vm.years),function(year){return (!_vm.setYear)?_c('td',[_vm._v(_vm._s((contributor[year]) ? contributor[year].additions || 0 : 0))]):_vm._e()}),_vm._v(" "),_vm._l((_vm.monthDecimals),function(month){return (_vm.setYear)?_c('td',[_vm._v(_vm._s((contributor[_vm.setYear + '-' + month]) ? contributor[_vm.setYear + '-' + month].additions || 0 : 0))]):_vm._e()}),_vm._v(" "),(!_vm.setYear)?_c('td',[_vm._v(_vm._s(contributor.additions))]):_vm._e(),_vm._v(" "),(_vm.setYear)?_c('td',[_vm._v(_vm._s((contributor[_vm.setYear]) ? contributor[_vm.setYear].additions || 0 : 0))]):_vm._e()],2)}))]),_vm._v(" "),_c('br'),_vm._v(" "),_c('h3',[_vm._v("Lines of code added by the top 5 organizations")]),_vm._v(" "),_c('table',{staticClass:"lines-of-code-table"},[_c('thead',[_c('tr',[_c('th',[_vm._v("Author")]),_vm._v(" "),_vm._l((_vm.years),function(year){return (!_vm.setYear)?_c('th',{staticClass:"clickable-header",on:{"click":function($event){_vm.setYear = year}}},[_vm._v(_vm._s(year))]):_vm._e()}),_vm._v(" "),_vm._l((_vm.monthNames),function(month){return (_vm.setYear)?_c('th',[_vm._v(_vm._s(month))]):_vm._e()}),_vm._v(" "),(!_vm.setYear)?_c('th',[_vm._v("Total all time")]):_vm._e(),_vm._v(" "),(_vm.setYear)?_c('th',{staticClass:"clickable-header",on:{"click":function($event){_vm.setYear = _vm.year}}},[_vm._v(_vm._s(_vm.setYear))]):_vm._e()],2)]),_vm._v(" "),_c('tbody',_vm._l((_vm.organizations.slice(0, 10)),function(organization){return _c('tr',[_c('td',[_vm._v(_vm._s(organization.name))]),_vm._v(" "),_vm._l((_vm.years),function(year){return (!_vm.setYear)?_c('td',[_vm._v(_vm._s((organization[year]) ? organization[year].additions || 0 : 0))]):_vm._e()}),_vm._v(" "),_vm._l((_vm.monthDecimals),function(month){return (_vm.setYear)?_c('td',[_vm._v(_vm._s((organization[_vm.setYear + '-' + month]) ? organization[_vm.setYear + '-' + month].additions || 0 : 0))]):_vm._e()}),_vm._v(" "),(!_vm.setYear)?_c('td',[_vm._v(_vm._s(organization.additions))]):_vm._e(),_vm._v(" "),(_vm.setYear)?_c('td',[_vm._v(_vm._s((organization[_vm.setYear]) ? organization[_vm.setYear].additions || 0 : 0))]):_vm._e()],2)}))]),_vm._v(" "),_c('p',[_vm._v(" "+_vm._s(_vm.chart)+" ")])])}
 __vue__options__.staticRenderFns = []
 if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -8746,6 +8888,7 @@ var routes = [{ path: '/', component: _AugurCards2.default,
     name: "risk",
     components: {
       tabs: _riskTabs2.default,
+      //controls: MainControls,
       content: _RiskCard2.default
     }
   }]

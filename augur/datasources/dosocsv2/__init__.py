@@ -17,7 +17,7 @@ class DoSOCSv2Plugin(AugurPlugin):
         if self.__dosocsv2 is None:
             logger.debug('Initializing DoSOCSv2')
             self.__dosocsv2 = DoSOCSv2(
-                repo_folder=self._augur.path('$(RUNTIME)/plugindata/dosocsv2/', create=True)
+                repo_folder=self._augur.path('$(RUNTIME)/plugindata/dosocsv2/')
             )
         return self.__dosocsv2
 

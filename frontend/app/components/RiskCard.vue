@@ -35,7 +35,7 @@
             </div>
         </div>-->
     </div></div>
-    
+
     <div class="row">
         <button id="lcBtn" style="border:2px solid black; width:600px">Scan this repository for license information</button>
         <p id="populate"></p>
@@ -52,6 +52,7 @@
 </template>
 <script>
 window.onload = function() {
+console.log("PATHNAME " + process.cwd());
 var URL = String(window.location)
 var URLements = URL.split("/")
 console.log(URLements)
@@ -97,11 +98,16 @@ document.getElementById("ciiBtn").addEventListener("click", function(){
     loader();
     request.send();
 });
+function readJSONFile()
+{
+
+      return "[[[\"PackageName\", \"rails\", \"SPDXID\", \"SPDXRef-package-rails-c46e-c774c238\", \"\", \"\", \"PackageFileName\", \"rails\", \"PackageSupplier\", \"NOASSERTION\", \"PackageOriginator\", \"NOASSERTION\", \"PackageDownloadLocation\", \"NOASSERTION\", \"PackageVerificationCode\", \"c46e4a381bfa07e7c9c4a1820f4f2d7db0004c65\", \"\", \"\", \"PackageHomePage\", \"NOASSERTION\", \"PackageLicenseConcluded\", \"NOASSERTION\", \"PackageLicenseDeclared\", \"NOASSERTION\", \"PackageLicenseComments\", \"\", \"PackageCopyrightText\", \"NOASSERTION\", \"PackageSummary\", \"\", \"PackageDescription\", \"\", \"PackageComment\", \" \"]], [[[\"PackageLicenseInfoFromFiles\", \"CC-BY-SA-4.0\"], [\"PackageLicenseInfoFromFiles\", \"LicenseRef-BSD\"], [\"PackageLicenseInfoFromFiles\", \"LicenseRef-Dual-license\"], [\"PackageLicenseInfoFromFiles\", \"LicenseRef-GPL\"], [\"PackageLicenseInfoFromFiles\", \"LicenseRef-See-URL\"], [\"PackageLicenseInfoFromFiles\", \"LicenseRef-See-doc.OTHER\"], [\"PackageLicenseInfoFromFiles\", \"LicenseRef-See file\"], [\"PackageLicenseInfoFromFiles\", \"MIT\"], [\"PackageLicenseInfoFromFiles\", \"Ruby\"]]]]";
+
+}
 document.getElementById("lcBtn").addEventListener("click", function(){
-    let AugurAPI = require('AugurAPI').default
-    let augurAPI = new AugurAPI()
-    console.log(augurAPI)
-        augurAPI.getLicenseInfo().then(function(data) {
+    //let AugurAPI = require('AugurAPI').default
+    //let augurAPI = new AugurAPI()
+        readJSONFile().then(function(data) {
             populate = document.getElementById("populate");
             populate.parentNode.removeChild(populate);
             //Retrieve raw data

@@ -25,8 +25,8 @@ class DoSOCSv2(object):
         repo_url = 'https://github.com/' + owner + '/' + repo + '.git'
 
         cwd = os.path.dirname(os.path.realpath(__file__))
-
-        temp = open("temp.txt", "r+")
+        print("WORKING:" + cwd)
+        temp = open(cwd + "/temp.txt", "r+")
         subprocess.call(['sudo', 'git', 'clone', repo_url, cwd + '/repodl/' + repo], shell=False)
         pope = subprocess.Popen(['sudo', 'dosocs2', 'oneshot', cwd + '/repodl/' + repo, '-T', cwd + '/2.0.tag.3'], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         subprocess.call(['sudo', 'dosocs2', 'oneshot', cwd + '/repodl/' + repo], shell=False, stdout=temp)
