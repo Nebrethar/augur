@@ -20,7 +20,7 @@ export default function Augur () {
   window.SvgSaver = require('svgsaver')
   window.VueRouter = require('vue-router')
   let router = require('./router/router').default
-
+  window.RiskCard = require('RiskCard').default
 
   window.AUGUR_CHART_STYLE = {
     brightColors: ['#FF3647', '#007BFF', '#DAFF4D', '#B775FF'],
@@ -182,11 +182,66 @@ export default function Augur () {
   })
 
   AugurApp.store = window.augur
-  
-  
-  
-  // AugurApp.router = router
-  // AugurApp.render = h => h(AugurApp)
+
+  router.beforeEach((to, from, next) => {
+    if (to.params.repo || to.params.groupid){
+      if (!to.params.groupid && !to.params.comparedrepo){
+        AugurApp.store.commit("resetTab")
+        AugurApp.store.commit('setTab', {
+          tab: to.name
+        })
+        if (to.params.repo.includes('github') || to.params.repo.split(".").length > 2) {
+          AugurApp.store.commit('setRepo', {
+            gitURL: to.params.repo
+          })
+        } else {
+          AugurApp.store.commit('setRepo', {
+            githubURL: to.params.owner + '/' + to.params.repo
+          })
+        }
+      } else if (to.params.comparedrepo && augur.state.comparedRepos.length == 0) { 
+        let tab = to.name
+        tab = tab.substring(0, tab.length-7)
+        AugurApp.store.commit("resetTab")
+        AugurApp.store.commit('setTab', {
+          tab
+        })
+        AugurApp.store.commit('setRepo', {
+            githubURL: to.params.owner + '/' + to.params.repo
+          })
+        AugurApp.store.commit('addComparedRepo', {
+          githubURL: to.params.comparedowner + '/' + to.params.comparedrepo
+        })
+      } else if (to.params.groupid && augur.state.comparedRepos.length == 0){
+        AugurApp.store.commit("resetTab")
+        let tab = to.name
+        tab = tab.substring(0, tab.length-5)
+        AugurApp.store.commit('setTab', {
+          tab
+        })
+        let repos = to.params.groupid.split('+')
+        if (repos[0].includes('github')) {
+          AugurApp.store.commit('setRepo', {
+            gitURL: repos[0]
+          })
+        } else {
+          AugurApp.store.commit('setRepo', {
+            githubURL: repos[0]
+          })
+        }
+        repos.shift()
+        // repos.pop()
+        repos.forEach((cmprepo) => {
+          AugurApp.store.commit('addComparedRepo', {
+            githubURL: cmprepo
+          })
+        })
+      }
+    }
+
+    next()
+
+  })
 
   // window.AugurApp = new window.Vue(AugurApp).$mount('#app')
   

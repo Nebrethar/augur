@@ -72,7 +72,7 @@ module.exports = {
           githubURL: e.target.value
         })
         this.$router.push({
-          name: 'gmd',
+          name: 'risk',
           params: {owner: repo.owner, repo: repo.name}
         })
       }

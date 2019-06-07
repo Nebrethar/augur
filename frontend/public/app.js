@@ -177,6 +177,7 @@ function Augur() {
   window.SvgSaver = require('svgsaver');
   window.VueRouter = require('vue-router');
   var router = require('./router/router').default;
+  window.RiskCard = require('RiskCard').default;
 
   window.AUGUR_CHART_STYLE = {
     brightColors: ['#FF3647', '#007BFF', '#DAFF4D', '#B775FF'],
@@ -1028,6 +1029,55 @@ var AugurStats = function () {
 exports.default = AugurStats;
 });
 
+;require.register("RiskCard.js", function(exports, require, module) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = RiskCard;
+
+//window.onload =
+function RiskCard() {
+
+    document.getElementById("ciiBtn").addEventListener("click", function () {
+        document.getElementById("overcii").style.display = "block";
+        document.getElementById("overcii").class = "row";
+        document.getElementById("ciiBtn").style.visibility = "hidden";
+        var request = new XMLHttpRequest();
+        function loader() {
+            var basestr = document.getElementById("base").innerHTML;
+            var augURL = 'https://github.com/' + basestr;
+            console.log('https://bestpractices.coreinfrastructure.org/projects.json?pq=' + augURL);
+            request.open('GET', 'https://bestpractices.coreinfrastructure.org/projects.json?pq=' + augURL, true);
+            request.onload = function () {
+                var data = JSON.parse(this.response)[0];
+                if (data != undefined) {
+                    //console.log('CII NAME: ' + data.name);
+                    //console.log(data);
+                    var badgeURL = 'https://bestpractices.coreinfrastructure.org/projects/' + data.id + '/badge';
+                    //console.log(badgeURL);
+                    document.getElementById("CIIbadge").src = badgeURL;
+                    if (data.badge_percentage_0 < 100) {
+                        document.getElementById("CII").innerHTML = data.name + ' is currently not passing CII Best Practices.';
+                    } else if (data.badge_percentage_1 < 100) {
+                        document.getElementById("CII").innerHTML = data.name + ' is currently passing CII Best Practices.';
+                    } else if (data.badge_percentage_2 < 100) {
+                        document.getElementById("CII").innerHTML = data.name + ' is currently passing CII Best Practices. This project has a siver status.';
+                    } else if (data.badge_percentage_2 == 100) {
+                        document.getElementById("CII").innerHTML = data.name + ' is currently passing CII Best Practices. <br>' + data.name + ' maintains a gold status.';
+                    }
+                } else {
+                    document.getElementById("CII").innerHTML = 'No best practice data for this repository.';
+                }
+            };
+        }
+        loader();
+        request.send();
+    });
+}
+});
+
 ;require.register("components/AugurApp.vue", function(exports, require, module) {
 ;(function(){
 'use strict';
@@ -1119,7 +1169,7 @@ module.exports = {
           githubURL: e.target.value
         });
         this.$router.push({
-          name: 'gmd',
+          name: 'risk',
           params: { owner: repo.owner, repo: repo.name }
         });
       }
@@ -2083,6 +2133,7 @@ if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
 ;(function(){
 "use strict";
 
+<<<<<<< Updated upstream
 window.onload = function () {
     console.log("PATHNAME " + process.cwd());
     var URL = String(window.location);
@@ -2199,6 +2250,14 @@ window.onload = function () {
         });
     });
 };
+=======
+var _RiskCard = require("RiskCard.js");
+
+var _RiskCard2 = _interopRequireDefault(_RiskCard);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+>>>>>>> Stashed changes
 module.exports = {
     data: function data() {
         return {
@@ -2206,7 +2265,16 @@ module.exports = {
         };
     },
 
-    components: {}
+    components: {},
+    mounted: function mounted() {
+        window.onload = (0, _RiskCard2.default)();
+    },
+
+    watch: {
+        '$route': function $route(to, from) {
+            if (to.path != from.path) window.location.reload();
+        }
+    }
 };
 })()
 if (module.exports.__esModule) module.exports = module.exports.default
