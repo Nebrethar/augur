@@ -3,13 +3,13 @@ import RepoGroup from '@/AugurAPI';
 export default {
     async createAPIObjects(context: any, payload: any) {
         try {
-            const apiGroups = context.state.getRepoGroups || {};
-            const apiRepos = context.state.getRepos || {};
-            console.log('DOING IT')
+            let apiGroups = context.state.getRepoGroups || {};
+            let apiRepos = context.state.getRepos || {};
+            console.log("DOING IT")
             if ('repos' in payload) {
                 payload.repos.forEach((repo: any) => {
                     apiRepos[repo.url] = context.state.AugurAPI.Repo({gitURL: repo.url,
-                        repo_id: repo.repo_id})
+                        repo_id:repo.repo_id})
                 })
             }
             if ('groups' in payload) {
@@ -68,7 +68,7 @@ export default {
                             tempCache[group.rg_name] = tempCache[group.rg_name] || {}
                             tempCache[group.rg_name]['groupEndpoints'] = tempCache[group.rg_name]['groupEndpoints'] || {}
                             payload.endpoints.forEach((endpoint: string) => {
-                                
+
                                 tempCache[group.rg_name]['groupEndpoints'][endpoint] = tempCache[group.rg_name]['groupEndpoints'][endpoint] || []
                                 console.log(endpoint)
                                 group[endpoint]().then((data: any) => {
@@ -113,7 +113,7 @@ export default {
             throw error;
         }
     },
-    async loadRepos(context: any, payload: any) {
+    async loadRepos(context:any, payload:any){
         try {
             return context.state.AugurAPI.getRepos().then((repos: object[]) => {
                 console.log("Loaded repos: ", repos)
@@ -123,11 +123,11 @@ export default {
                 });
                 return repos
             })
-        } catch (error) {
+        } catch(error) {
             throw error;
         }
     },
-    async loadRepoGroups(context: any, payload: any) {
+    async loadRepoGroups(context:any, payload:any){
         try {
             return context.state.AugurAPI.getRepoGroups().then((rgs: object[]) => {
                 console.log("Loaded repo groups: ", rgs)
@@ -210,7 +210,7 @@ export default {
                   rg_name: rg_name,
                   repo_name: repo_name
                 })
-                context.commit('mutateAPIRepo', { '{repo}': repo, 'name': repo.toString()})
+                context.commit('mutateAPIRepo', {repo: repo, name: repo.toString()})
                 resolve(repo)
             })
         })
@@ -229,5 +229,5 @@ export default {
                 resolve(group)
             })
         })
-    },
+    }
 };
