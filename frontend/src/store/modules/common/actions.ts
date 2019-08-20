@@ -68,7 +68,7 @@ export default {
                             tempCache[group.rg_name] = tempCache[group.rg_name] || {}
                             tempCache[group.rg_name]['groupEndpoints'] = tempCache[group.rg_name]['groupEndpoints'] || {}
                             payload.endpoints.forEach((endpoint: string) => {
-
+                                
                                 tempCache[group.rg_name]['groupEndpoints'][endpoint] = tempCache[group.rg_name]['groupEndpoints'][endpoint] || []
                                 console.log(endpoint)
                                 group[endpoint]().then((data: any) => {
