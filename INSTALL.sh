@@ -1,8 +1,8 @@
 #!/bin/bash
 ## Back End
 rm -rf build/*; rm $VIRTUAL_ENV/bin/*worker*; 
-pip install pipreqs sphinx; 
-pip install -e .; pip install ipykernel; pip install xlsxwriter; python -m ipykernel install --user --name augur --display-name "Python (augur)"; 
+pip3 install pipreqs sphinx; 
+pip3 install -e .; pip3 install ipykernel; pip3 install xlsxwriter; python -m ipykernel install --user --name augur --display-name "Python (augur)"; 
 python setup.py install;
 
 ## Front End 

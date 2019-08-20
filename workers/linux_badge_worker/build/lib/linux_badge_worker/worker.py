@@ -6,7 +6,7 @@ import sqlalchemy as s
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy import MetaData
 import logging
-logging.basicConfig(filename='worker.log', level=logging.INFO)
+logging.basicConfig(filename='worker.log', level=logging.INFO, filemode='w')
 
 class CollectorTask:
     """ Worker's perception of a task in its queue
@@ -87,17 +87,17 @@ class BadgeWorker:
 
 
         # """ Query all repos """
-        # repoUrlSQL = s.sql.text("""
-        #     SELECT repo_git, repo_id FROM repo
-        #     """)
-        # rs = pd.read_sql(repoUrlSQL, self.db, params={})
+        repoUrlSQL = s.sql.text("""
+            SELECT repo_git, repo_id FROM repo
+            """)
+        rs = pd.read_sql(repoUrlSQL, self.db, params={})
 
-        # #fill queue
-        # for index, row in rs.iterrows():
-        #     entry_info = {"git_url": row["repo_git"], "repo_id": row["repo_id"]}
-        #     self._queue.put(CollectorTask(message_type='TASK', entry_info=entry_info))
+        #fill queue
+        for index, row in rs.iterrows():
+            entry_info = {"git_url": row["repo_git"], "repo_id": row["repo_id"]}
+            self._queue.put(CollectorTask(message_type='TASK', entry_info=entry_info))
 
-        # self.run()
+        self.run()
 
         requests.post('http://localhost:5000/api/workers', json=specs) #hello message
         
@@ -183,18 +183,33 @@ class BadgeWorker:
         """ Data collection and storage method
         Query the github api for contributors and issues (not yet implemented)
         """
-        extension = "?pq=" + entry_info['git_url']
+
+        git_url = entry_info['git_url']
+
+        # Handles git url case by removing the extension
+        if ".git" in git_url:
+            git_url = git_url[:-4]
+
+        extension = "?pq=" + git_url
+
         url = self.config['endpoint'] + extension
         logging.info("Hitting endpoint: " + url + " ...\n")
         r = requests.get(url=url)
         data = r.json()
-        data[0]['repo_id'] = entry_info['repo_id']
-             
-        self.db.execute(self.table.insert().values(data[0]))
-        logging.info("Inserted badging info for repo: " + entry_info['repo_id'] + "\n")   
+        if len(data) != 0:
+        
+            data[0]['repo_id'] = entry_info['repo_id']
+                 
+            self.db.execute(self.table.insert().values(data[0]))
+            logging.info("Inserted badging info for repo: " + str(entry_info['repo_id']) + "\n")   
 
-        logging.info("Telling broker we completed task: " + str(task_completed) + "\n\n")
-        requests.post('http://localhost:5000/api/completed_task', json=entry_info['git_url'])
+            task_completed = entry_info.to_dict()
+            task_completed['worker_id'] = self.config['id']
+
+            logging.info("Telling broker we completed task: " + str(task_completed) + "\n\n")
+            requests.post('http://localhost:5000/api/completed_task', json=entry_info['git_url'])
+        else:
+            logging.info("Endpoint did not return any data.")
 
 
 
