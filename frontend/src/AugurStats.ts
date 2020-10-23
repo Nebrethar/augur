@@ -1,3 +1,4 @@
+// #SPDX-License-Identifier: MIT
 /* tslint:disable */
 export default class AugurStats {
     static convertDates (data:any, earliest: Date = new Date('01-01-2005'), latest: Date = new Date(), key: string = 'date') {
@@ -88,9 +89,12 @@ export default class AugurStats {
   
     static standardDeviationLines (data:any, key:string, addon:any, mean: number) {
       let flat = data.map((e:any) => { return e[key] })
-      console.log(addon)
+      console.log(addon.replace(/\//g,''))
+      addon = addon.replace(/\//g,'')
+      console.log(addon.replace(/\./g,''))
+      addon = addon.replace(/\./g,'')
   
-      let extension = addon//(addon['githubURL']).split('/').join('');
+      let extension = addon
       console.log(extension)
       mean = mean || AugurStats.averageArray(flat)
       let distances = flat.map((e:number) => {
@@ -102,8 +106,9 @@ export default class AugurStats {
           newObj.date = new Date(e.date)
           newObj[key + extension] = e[key]
         }
-        newObj['upper' + extension] = e[key] + Math.sqrt(AugurStats.averageArray(distances))
-        newObj['lower' + extension] = e[key] - Math.sqrt(AugurStats.averageArray(distances))
+        newObj['date' + addon] = newObj.date
+        // newObj['upper' + extension] = e[key] + Math.sqrt(AugurStats.averageArray(distances))
+        // newObj['lower' + extension] = e[key] - Math.sqrt(AugurStats.averageArray(distances))
         return newObj
       })
     }
@@ -152,7 +157,8 @@ export default class AugurStats {
       return AugurStats.dateAggregate(data, period, period, (period / 2), (filteredData: any, date: any) => {
         let flat = AugurStats.flatten(filteredData, key)
         let datum: any = { date: date }
-        datum[key + "Rolling"] = Math.round(AugurStats.averageArray(flat)*100)/100
+        let newKey = (key + "Rolling")
+        datum[newKey] = Math.round(AugurStats.averageArray(flat)*100)/100
         return datum
       })
     }

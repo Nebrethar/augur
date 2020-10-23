@@ -1,16 +1,13 @@
+<!-- #SPDX-License-Identifier: MIT -->
 <template>
   <div ref="chart" class="linechart"></div>
 </template>
 
 
 <script>
-
-  import AugurStats from '../../AugurStats.ts'
-  import * as d3 from 'd3'
-
   export default {
-    computed : {
-      chart () {
+    computed: {
+      chart() {
         MG.data_graphic({
           title: "Missing Data",
           error: 'Data unavaliable',
@@ -23,5 +20,4 @@
       }
     }
   }
-
 </script>

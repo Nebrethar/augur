@@ -1,3 +1,4 @@
+<!-- #SPDX-License-Identifier: MIT -->
 <template>
   <d-card class="card-small">
 
@@ -24,7 +25,7 @@
 
         <!-- Time Frame -->
         <d-col>
-          <d-select size="sm" value="last-week" style="max-width: 130px;">
+          <d-select size="sm" value="last-week" class="generalSize">
             <option value="last-week">Last Week</option>
             <option value="today">Today</option>
             <option value="last-month">Last Month</option>

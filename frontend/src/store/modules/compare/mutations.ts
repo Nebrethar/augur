@@ -1,3 +1,4 @@
+// #SPDX-License-Identifier: MIT
 /* tslint:disable */
 import Vue from 'vue';
 import router from '@/router';
@@ -78,13 +79,6 @@ export default {
           state.showDetail = payload.showDetail
         }
       },
-
-    mutateStartDateChange(state:any, payload:Date) {
-        state.startDate = payload
-    },
-    mutateEndDateChange(state:any, payload:Date) {
-        state.endDate = payload
-    }
 
 
     // addComparedRepo(state: any, payload: any) {

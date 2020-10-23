@@ -1,12 +1,10 @@
+<!-- #SPDX-License-Identifier: MIT -->
 <template>
-  <div ref="holder">
-    <div class="tickchart ">
-      <h3>Lines of code added by the top 10 authors visualized</h3>
+  <div>
       <div :id="source"></div>
-      <!-- <vega-lite :spec="spec" :data="values"></vega-lite> -->
-      <p> {{ chart }} </p>
+      <vega-lite :spec="spec" :data="values"></vega-lite>
       <!-- <p class="note">*point values with total lines changed outside the bounds of [50.000, 1.000.000] are rounded to the corresponding edge limit</p> -->
-      <div class="form-item form-checkboxes tickradios" style="transform: translateY(-35px) !important">
+      <!-- <div class="form-item form-checkboxes tickradios" class="tickChartDiv">
 
 
           <div class="inputGroup" >
@@ -24,8 +22,7 @@
 
         
       </div>
-      
-    </div>
+       -->
   </div>
 </template>
 
@@ -33,6 +30,8 @@
 <script>
 import { mapState } from 'vuex'
 import AugurStats from '@/AugurStats.ts'
+import vegaEmbed from 'vega-embed'
+
 export default {
   props: ['source', 'citeUrl', 'citeText', 'title', 'disableRollingAverage', 'alwaysByDate', 'data'],
   data() {
@@ -51,10 +50,20 @@ export default {
       monthDecimals: monthDecimals,
       years: years,
       setYear: 0,
-      tick: 0
+      tick: 0,
+      x:0,
+      y:0
     }
   },
   mounted() {
+    var win = window,
+      doc = document,
+      docElem = doc.documentElement,
+      body = doc.getElementsByTagName('body')[0],
+      x = win.innerWidth || docElem.clientWidth || body.clientWidth,
+      y = win.innerHeight|| docElem.clientHeight|| body.clientHeight;
+    this.x = x
+    this.y = y
     this.spec;
   },
   computed: {
@@ -87,8 +96,8 @@ export default {
       }
       if (this.tick == 1) {
         type = "tick"
-            bin = false
-            size = {}
+        bin = false
+        size = {}
         opacity = {
                 "field": "Total lines changed",
                 "type": "quantitative",
@@ -97,8 +106,8 @@ export default {
       }
       if (this.tick == 2) {
         type = "rect"
-            bin = {"maxbins": 40}
-            size = {}
+        bin = {"maxbins": 40}
+        size = {}
         opacity = {
                 "field": "Total lines changed",
                 "type": "quantitative",
@@ -106,48 +115,50 @@ export default {
               }
       }
       let config = {
-        "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
-
-        "width": 1000,
-        "height": 360,
-        "padding": {"left": -10, "top": 35, "right": 5, "bottom": -18},
+        "width": this.x / 1.5,
+        "height": this.y / 2.4,
+        "padding": {"left": -10, "top": 0, "right": 5, "bottom": 10},
         "config": {
           "tick": {
             "thickness": 8,
             "bandSize": 23
           },
           "axis":{
-                "grid": false,
-                "title": null
-              },
-              "legend": {
-               // "offset": -505,
-                "titleFontSize": 10,
-                "titlePadding": 10
-              },"scale": {"minSize": 100, "maxSize": 500}
+            "grid": false,
+            "title": null,
+            'labels': {
+              'labelFontSize': 20
+            },
+          },
+          "legend": {
+           // "offset": -505,
+            "titleFontSize": 10,
+            "titlePadding": 10
+          },
+          "scale": {"minSize": 100, "maxSize": 500}
         },
         "layer": [
           {
             "transform": [
              
-              {
-                "calculate": "(datum.additions > datum.deletions) ? 'more deletions' : 'more additions'",
-                "as": "Majority type of changes"
-              },
-              {
-                "calculate": "(datum.additions - datum.deletions)",
-                "as": "Net lines added"
-              },
-              {
-                "calculate": "(datum.additions + datum.deletions) < 50000 ? 50000 : ((datum.additions + datum.deletions) > 1000000 ? 1000000 : (datum.additions + datum.deletions))",
-                "as": "Total lines changed"
-              },
+              // {
+              //   "calculate": "(datum.additions > datum.deletions) ? 'more deletions' : 'more additions'",
+              //   "as": "Majority type of changes"
+              // },
+              // {
+              //   "calculate": "(datum.additions - datum.deletions)",
+              //   "as": "Net lines added"
+              // },
+              // {
+              //   "calculate": "(datum.additions + datum.deletions) < 0000 ? 0000 : ((datum.additions + datum.deletions) > 100000000 ? 100000000 : (datum.additions + datum.deletions))",
+              //   "as": "Total lines changed"
+              // },
             ],
             "mark": type,
             
             "encoding": {
-              "x": {"field": "author_date", "type": "temporal", "bin": bin, "axis": {"format": "%b %Y", "title": " "}},
-              "y": {"field": "author_email", "type": "nominal"},
+              "x": {"field": "cmt_author_date", "type": "temporal", "bin": bin, "axis": {"format": "%b %Y", "title": " "}},
+              "y": {"field": "cmt_author_email", "type": "nominal"},
               "color": {
                 "field": "Net lines added",
                 "type": "quantitative",
@@ -159,59 +170,49 @@ export default {
             },
             
           },
-          {
-            "mark": "rule",
-            "transform": [
-              {
-                "calculate": "(datum.additions > datum.deletions) ? 'more deletions' : 'more additions'",
-                "as": "Majority type of changes"
-              },
-              {
-                "calculate": "(datum.additions - datum.deletions)",
-                "as": "Net lines added"
-              },
-              {
-                "calculate": "(datum.additions + datum.deletions) < 50000 ? 50000 : ((datum.additions + datum.deletions) > 1000000 ? 1000000 : (datum.additions + datum.deletions))",
-                "as": "Total lines changed"
-              },
-            ],
-            "selection": {
-              "tooltip": {"type": "multi", "on": "mouseover","nearest": false, "empty": "none"}
-            },
-            "encoding": {
-              "size": {"value": 8},
-              "opacity": {"value": 1.051},
-              "x": {"field": "author_date", "type": "temporal"},
-              // "y": {"field": "author_email", "type": "nominal"},
-              "tooltip": [{"field": "author_email", "type": "nominal"},{
-                "field": "Total lines changed",
-                "type": "quantitative",
-              },{
-                "field": "Net lines added",
-                "type": "quantitative",
-              }],
-              "color": {
-                "condition":{
-                  "selection": {"not": "tooltip"}, "value": "transparent"
-                }
-              }
-            }
-          }
+          // {
+          //   "mark": "rule",
+          //   "transform": [
+          //     {
+          //       "calculate": "(datum.additions > datum.deletions) ? 'more deletions' : 'more additions'",
+          //       "as": "Majority type of changes"
+          //     },
+          //     {
+          //       "calculate": "(datum.additions - datum.deletions)",
+          //       "as": "Net lines added"
+          //     },
+          //     {
+          //       "calculate": "(datum.additions + datum.deletions) < 0000 ? 0000 : ((datum.additions + datum.deletions) > 1000000000 ? 1000000000 : (datum.additions + datum.deletions))",
+          //       "as": "Total lines changed"
+          //     },
+          //   ],
+            // "selection": {
+            //   "tooltip": {"type": "multi", "on": "mouseover","nearest": false, "empty": "none"}
+            // },
+            // "encoding": {
+            //   "size": {"value": 8},
+            //   "opacity": {"value": 1.051},
+            //   "x": {"field": "cmt_author_date", "type": "temporal"},              
+              // "tooltip": [{"field": "cmt_author_email", "type": "nominal"},{
+              //   "field": "Total lines changed",
+              //   "type": "quantitative",
+              // },
+              // {
+              //   "field": "Net lines added",
+              //   "type": "quantitative",
+              // }],
+              // "color": {
+                // "condition":{
+                  // "selection": {"not": "tooltip"}, 
+                  // "value": "transparent"
+                // }
+              // }
+            // }
+          // }
         ]
         
       }
       let repo = null
-      if (this.repo) {
-        if (window.AugurRepos[this.repo]) {
-          repo = window.AugurRepos[this.repo]
-        } else {
-          let repo = window.AugurAPI.Repo({"gitURL": this.gitRepo})
-          window.AugurRepos[repo.toString] = repo
-        }
-      } else {
-        repo =  window.AugurAPI.Repo({ gitURL: this.gitRepo })
-        window.AugurRepos[repo.toString()] = repo
-      }
 
       let contributors = {}
       let organizations = {}
@@ -227,8 +228,8 @@ export default {
       }
       let group = (obj, name, change, filter) => {
         if (filter(change)) {
-          let year = (new Date(change.author_date)).getFullYear()
-          let month = (new Date(change.author_date)).getMonth()
+          let year = (new Date(change.cmt_author_date)).getFullYear()
+          let month = (new Date(change.cmt_author_date)).getMonth()
           obj[change[name]] = obj[change[name]] || { additions: 0, deletions: 0 }
           addChanges(obj[change[name]], change)
           obj[change[name]][year] = obj[change[name]][year] || { additions: 0, deletions: 0 }
@@ -249,27 +250,27 @@ export default {
             })
       }
       let filterDates = (change) => {
-        return (new Date(change.author_date)).getFullYear() > this.years[0]
+        return (new Date(change.cmt_author_date)).getFullYear() > this.years[0]
       }
       let processData = (data) => {
         data.forEach((change) => {
-          change.author_date = new Date(change.author_date)
+          change.cmt_author_date = new Date(change.cmt_author_date)
         })
         data.forEach((change) => {
           if (isFinite(change.additions) && isFinite(change.deletions)) {
-            group(contributors, 'author_email', change, filterDates)
+            group(contributors, 'cmt_author_email', change, filterDates)
             if (change.author_affiliation !== 'Unknown') {
               group(organizations, 'affiliation', change, filterDates)
             }
           }
         })
         
-        //this.values = flattenAndSort(contributors, 'author_email', 'additions')
+        //this.values = flattenAndSort(contributors, 'cmt_author_email', 'additions')
         //this.organizations = flattenAndSort(organizations, 'name', 'additions')
-        this.contributors = flattenAndSort(contributors, 'author_email', 'additions')
+        this.contributors = flattenAndSort(contributors, 'cmt_author_email', 'additions')
         var careabout = []
         this.contributors.slice(0,10).forEach((obj) => {
-          careabout.push(obj["author_email"])
+          careabout.push(obj["cmt_author_email"])
         })
         let findObjectByKey = (array, key, value) => {
             let ary = []
@@ -283,10 +284,10 @@ export default {
         var ary = []
         
         careabout.forEach((name) => {
-          findObjectByKey(data, "author_email", name).forEach((obj) => {
+          findObjectByKey(data, "cmt_author_email", name).forEach((obj) => {
             ary.push(obj)
           })
-          // changes.find(obj => obj.author_email == name))
+          // changes.find(obj => obj.cmt_author_email == name))
         })
       
         this.values = ary
@@ -298,12 +299,9 @@ export default {
           processData(changes)
         })
       }
-      $(this.$el).find('.showme, .hidefirst').removeClass('invis')
-      $(this.$el).find('.stackedbarchart').removeClass('loader')
       // Get the repos we need
       let repos = []
       if (this.repo) {
-        repos.push(window.AugurRepos[this.repo])
       }
       this.reloadImage(config)
       return config
@@ -311,6 +309,7 @@ export default {
   },
   methods: {
     reloadImage (config) {
+      console.log("TICK",this.values, config)
       config.data = {"values": this.values}
       vegaEmbed('#' + this.source, config, {tooltip: {offsetY: -110}, mode: 'vega-lite',}) 
     }

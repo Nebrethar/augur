@@ -161,11 +161,17 @@ def fill_empty_affiliations(cfg):
                     "SET cmt_%s_affiliation = %%s "
                     "WHERE cmt_%s_email = %%s "
                     "AND cmt_%s_affiliation IS NULL "
-                    "AND cmt_%s_date >= %%s" %
+                    "AND cmt_%s_date::date >= %%s::date" %
                     (attribution, attribution, attribution, attribution))
 
-                cfg.cursor.execute(update, (match[0], email, match[1]))
-                cfg.db.commit()
+                cfg.log_activity('Info', 'attr: {} \nmatch:{}\nsql: {}'.format(attribution, match, update))
+
+                try: 
+                    cfg.cursor.execute(update, (match[0], email, match[1]))
+                    cfg.db.commit()
+                except Exception as e: 
+                    cfg.log_activity('Info', 'Error encountered: {}'.format(e))
+                    cfg.log_activity('Info', 'Affiliation insertion failed for %s ' %  email)
 
     def discover_alias(email):
 
@@ -205,10 +211,10 @@ def fill_empty_affiliations(cfg):
 
     affiliations_processed = cfg.get_setting('affiliations_processed')
 
-    get_changed_affiliations = ("SELECT ca_domain FROM contributor_affiliations WHERE "
-        "ca_last_modified >= %s")
+    get_changed_affiliations = ("SELECT ca_domain FROM contributor_affiliations")# WHERE "
+        #"ca_last_used >= timestamptz  %s")
 
-    cfg.cursor_people.execute(get_changed_affiliations, (affiliations_processed, ))
+    cfg.cursor_people.execute(get_changed_affiliations)#, (affiliations_processed, ))
 
     changed_affiliations = list(cfg.cursor_people)
 
@@ -220,13 +226,13 @@ def fill_empty_affiliations(cfg):
             changed_affiliation[0])
 
         set_author_to_null = ("UPDATE commits SET cmt_author_affiliation = NULL "
-            "WHERE author_email LIKE CONCAT('%%',%s)")
+            "WHERE cmt_author_email LIKE CONCAT('%%',%s)")
 
         cfg.cursor.execute(set_author_to_null, (changed_affiliation[0], ))
         cfg.db.commit()
 
         set_committer_to_null = ("UPDATE commits SET cmt_committer_affiliation = NULL "
-            "WHERE committer_email LIKE CONCAT('%%',%s)")
+            "WHERE cmt_committer_email LIKE CONCAT('%%',%s)")
 
         cfg.cursor.execute(set_committer_to_null, (changed_affiliation[0], ))
         cfg.db.commit()
@@ -266,13 +272,13 @@ def fill_empty_affiliations(cfg):
             changed_alias[0])
 
         set_author_to_null = ("UPDATE commits SET cmt_author_affiliation = NULL "
-            "WHERE author_raw_email LIKE CONCAT('%%',%s)")
+            "WHERE cmt_author_raw_email LIKE CONCAT('%%',%s)")
 
         cfg.cursor.execute(set_author_to_null,(changed_alias[0], ))
         cfg.db.commit()
 
         set_committer_to_null = ("UPDATE commits SET cmt_committer_affiliation = NULL "
-            "WHERE committer_raw_email LIKE CONCAT('%%',%s)")
+            "WHERE cmt_committer_raw_email LIKE CONCAT('%%',%s)")
 
         cfg.cursor.execute(set_committer_to_null, (changed_alias[0], ))
         cfg.db.commit()

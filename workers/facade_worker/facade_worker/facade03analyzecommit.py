@@ -36,8 +36,9 @@ import os
 import getopt
 import xlsxwriter
 import configparser
-import logging
-logging.basicConfig(filename='worker.log', filemode='w', level=logging.INFO)
+import traceback 
+
+from workers.util import read_config
 
 def analyze_commit(cfg, repo_id, repo_loc, commit, multithreaded):
 
@@ -89,6 +90,49 @@ def analyze_commit(cfg, repo_id, repo_loc, commit, multithreaded):
 		else:
 			return email
 
+	def update_contributors(author_em, committer_em, auth_nm, cmtr_nm): 
+
+		#Check if an email already exists in the database for either the committer or the author 
+		#There is a committer and an author on each commit, but only one record in the contributor table (ideally)
+		# For each email address. So, for each email address, we need to check if it exists in the contributor
+		# Table. 
+		def contributor_exists(some_email):
+
+			#SQL String to insert values into the contributors table
+			some_email = some_email.replace("'","")
+			email_check = ("""SELECT cntrb_email, tool_source, tool_version, data_source FROM contributors WHERE cntrb_email = '{}'""".format(some_email))
+
+			cursor_local.execute(email_check)
+
+			if cursor_local.fetchone() is not None: 
+				db_local.commit()
+				emails_to_add = some_email
+				return True
+			else: 
+				return False
+		#SQL to update the contributors table 
+		cntrb = ("INSERT INTO contributors "
+			"(cntrb_email,cntrb_canonical,cntrb_full_name,tool_source, tool_version, data_source) "
+			"VALUES (%s,%s,%s,'FacadeAugur','0.0.1','git_repository')")
+
+		## Logic block for updating contributors. 
+		if contributor_exists(author_em): 
+			cfg.log_activity('Info', 'Author contributor record already exists: {}'.format(author_em))
+		else: 
+			# add a contributor record for the author
+			cursor_local.execute(cntrb, (author_em, discover_alias(author_em), str(auth_nm)))
+			db_local.commit()
+			cfg.log_activity('Info','Stored author contributor with email: {}'.format(author_em))
+
+		if  contributor_exists(committer_em): 
+			cfg.log_activity('Info', 'Author contributor record already exists: {}'.format(committer_em))
+		else: 
+			#add a contributor record for the committer 
+			cursor_local.execute(cntrb, (committer_em, discover_alias(committer_em), str(cmtr_nm)))
+			db_local.commit()
+			cfg.log_activity('Info','Stored committer contributor with email: {}'.format(committer_em))
+				
+
 	def store_commit(repos_id,commit,filename,
 		author_name,author_email,author_date,author_timestamp,
 		committer_name,committer_email,committer_date,committer_timestamp,
@@ -135,51 +179,16 @@ def analyze_commit(cfg, repo_id, repo_loc, commit, multithreaded):
 		cfg.log_activity('Debug','Stored commit: %s' % commit)
 
 		# Check if email already exists in db
-		email_check = ("""SELECT cntrb_email 
-			FROM contributors WHERE cntrb_email = %s OR cntrb_email = %s""")
-		cursor_local.execute(email_check,(author_email,committer_email,))
-		db_local.commit()
-
-		emails = list(cursor_local)
-		emails_to_add = emails
-		emails_to_update = []
-
-		for email in emails:
-			if email[0] == committer_email or email[0] == author_email:
-				emails_to_add = [tuple for tuple in emails_to_add if tuple != email]
-				emails_to_update.append(email)
-
-		if len(emails_to_add) > 0:
-			for email in emails_to_add:
-				cntrb = ("INSERT INTO contributors "
-					"(cntrb_email,cntrb_canonical,cntrb_full_name) "
-					"VALUES (%s,%s,%s)")
-				if email[0] == author_email:
-					cursor_local.execute(cntrb, (author_email, discover_alias(author_email), str(author_name)))
-					db_local.commit()
-					cfg.log_activity('Debug','Stored contributor with email: %s' % author_email)
-
-				elif email[0] == committer_email:
-					cursor_local.execute(cntrb, (committer_email, discover_alias(committer_email), str(committer_name)))
-					db_local.commit()
-					cfg.log_activity('Debug','Stored contributor with email: %s' % committer_email)
-
-		if len(emails_to_update) > 0:
-			for email in emails_to_update:
-				email_update = ("UPDATE contributors "
-					"SET cntrb_canonical=%s, cntrb_full_name=%s "
-					"WHERE cntrb_email=%s")
-				if email[0] == author_email:
-					cursor_local.execute(email_update, (discover_alias(author_email),
-						str(author_name), email[0]))
-					db_local.commit()
-					cfg.log_activity('Debug','Updated contributor with email: %s' % author_email)
-				elif email[0] == committer_email:
-					cursor_local.execute(email_update, (discover_alias(committer_email),
-						str(committer_name), email[0]))
-					db_local.commit()
-					cfg.log_activity('Debug','Updated contributor with email: %s' % committer_email)
-				
+#		email_check = ("""SELECT cntrb_email, tool_source, tool_version, data_source
+#			FROM contributors WHERE cntrb_email = {augur_email} OR cntrb_email = {committer_email}}""")
+		
+		## Commented out so as to not update contributors
+		## sean: 11/6/2019
+		## Goal: Address with the contributors model worker
+		# try: 
+		# 	update_contributors(author_email, committer_email, author_name, committer_name) 
+		# except Exception: #print(e) 
+		# 	cfg.log_activity('Info', str(traceback.print_exc()))
 
 ### The real function starts here ###
 
@@ -190,16 +199,16 @@ def analyze_commit(cfg, repo_id, repo_loc, commit, multithreaded):
 	removed = 0
 	whitespace = 0
 
-
-	json = cfg.read_config("Database", use_main_config=1)
-	db_user = json['user']
-	db_pass = json['password']
-	db_name = json['database']
-	db_host = json['host']
-	db_user_people = json['user']
-	db_pass_people = json['password']
-	db_name_people = json['database']
-	db_host_people = json['host']
+	db_user = read_config('Database', 'user', 'AUGUR_DB_USER', 'augur')
+	db_pass = read_config('Database', 'password', 'AUGUR_DB_PASSWORD', 'augur')
+	db_name = read_config('Database', 'name', 'AUGUR_DB_NAME', 'augur')
+	db_host = read_config('Database', 'host', 'AUGUR_DB_HOST', 'localhost')
+	db_port = read_config('Database', 'port', 'AUGUR_DB_PORT', 5432)
+	db_user_people = db_user
+	db_pass_people = db_pass
+	db_name_people = db_name
+	db_host_people = db_host
+	db_port_people = db_port
 
 	# Set up new threadsafe database connections if multithreading. Otherwise
 	# use the gloabl database connections so we don't incur a performance
@@ -210,13 +219,15 @@ def analyze_commit(cfg, repo_id, repo_loc, commit, multithreaded):
 			db_host,
 			db_user,
 			db_pass,
-			db_name, False, True)
+			db_name,
+			db_port, False, True)
 
 		db_people_local,cursor_people_local = cfg.database_connection(
 			db_host_people,
 			db_user_people,
 			db_pass_people,
-			db_name_people, True, True)
+			db_name_people,
+			db_port_people, True, True)
 
 	else:
 		db_local = cfg.db
@@ -233,6 +244,8 @@ def analyze_commit(cfg, repo_id, repo_loc, commit, multithreaded):
 		"committer_name: %%cn%%ncommitter_email: %%ce%%ncommitter_date: %%ci%%n"
 		"parents: %%p%%nEndPatch' "
 		% (repo_loc,commit)], stdout=subprocess.PIPE, shell=True)
+
+	## 
 
 	# Stash the commit we're going to analyze so we can back it out if something
 	# goes wrong later.
@@ -379,13 +392,15 @@ def analyze_commit(cfg, repo_id, repo_loc, commit, multithreaded):
 		added,removed,whitespace)
 
 	# Remove the working commit.
-	remove_commit = ("DELETE FROM working_commits "
-		"WHERE repos_id = %s AND working_commit = %s")
-	cursor_local.execute(remove_commit, (repo_id,commit))
-	db_local.commit()
+	try: 
+		remove_commit = ("DELETE FROM working_commits "
+			"WHERE repos_id = %s AND working_commit = %s")
+		cursor_local.execute(remove_commit, (repo_id,commit))
+		db_local.commit()
 
-	cfg.log_activity('Debug','Completed and removed working commit: %s' % commit)
-
+		cfg.log_activity('Debug','Completed and removed working commit: %s' % commit)
+	except:
+		cfg.log_activity('Info', 'Working Commit: %s' % commit)
 	# If multithreading, clean up the local database
 
 	if multithreaded:

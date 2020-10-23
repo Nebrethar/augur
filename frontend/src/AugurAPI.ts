@@ -1,3 +1,4 @@
+// #SPDX-License-Identifier: MIT
 /* tslint:disable */
 var $ = require('jquery')
 var _ = require('lodash')
@@ -29,7 +30,8 @@ export default class AugurAPI {
     this.__downloadedGitRepos = []
 
     this._version = version || '/api/unstable'
-    this._host = hostURL || 'http://localhost:5002'
+    this._host = hostURL || 'http://localhost:5000'
+    console.log(this._host)
     this.__cache = {}
     this.__timeout = null
     this.__pending = {}
@@ -99,12 +101,13 @@ export default class AugurAPI {
   }
 
   __EndpointFactory(endpoint: string) {
+    console.log(this.__endpointURL(endpoint))
     return this.__URLFunctionFactory(this.__endpointURL(endpoint))
   }
 
   batch(endpoints: Array<String>) {
     let str = '[{"method": "GET", "path": "' + endpoints.join('"},{"method": "GET", "path": "') + '"}]'
-    console.log(str)
+    // console.log(str)
     this.openRequests++
     let url = this.__endpointURL('batch')
     // Check cached
@@ -128,7 +131,7 @@ export default class AugurAPI {
         created_at: Date.now(),
         data: data
       }
-      console.log(data)
+      // console.log(data)
       return data
     })
   }
@@ -137,19 +140,19 @@ export default class AugurAPI {
     let endpoints: String[] | any[] = []
     let reverseMap: any = {}
     let processedData: any = {}
-    console.log(repos)
+    // console.log(repos)
     repos.forEach((repo:any) => {
       // Array.prototype.push.apply(endpoints, repo.batch(fields, true))
       // _.assign(reverseMap, repo.__reverseEndpointMap)
       processedData[repo.toString()] = {}
       fields.forEach((field:any) => {
-        console.log("endpoint_map: ", field, repo)
-        console.log(repo.__endpointMap[field])
+        // console.log("endpoint_map: ", field, repo)
+        // console.log(repo.__endpointMap[field])
         endpoints.push(repo.__endpointMap[field])
         reverseMap[repo.__endpointMap[field]] = repo.__reverseEndpointMap[repo.__endpointMap[field]]
       })
     })
-    console.log("before batch:", endpoints, reverseMap)
+    // console.log("before batch:", endpoints, reverseMap)
     return this.batch(endpoints).then((data: any) => {
 
       let newdat = new Promise((resolve, reject) => {
@@ -159,19 +162,19 @@ export default class AugurAPI {
               processedData[reverseMap[response.path].owner] = processedData[reverseMap[response.path].owner] || {}
               processedData[reverseMap[response.path].owner][reverseMap[response.path].name] = []
               processedData[reverseMap[response.path].owner][reverseMap[response.path].name] = JSON.parse(response.response)
-              console.log("pdata after response", processedData, typeof (reverseMap[response.path].owner), typeof (reverseMap[response.path].name), JSON.parse(response.response), response.response)
+              // console.log("pdata after response", processedData, typeof (reverseMap[response.path].owner), typeof (reverseMap[response.path].name), JSON.parse(response.response), response.response)
             } else if (reverseMap[response.path]) {
-              console.log('failed null')
+              // console.log('failed null')
               processedData[reverseMap[response.path].owner][reverseMap[response.path].name] = null
             }
           })
-          console.log(processedData)
+          // console.log(processedData)
           resolve(processedData)
         } else {
           reject(new Error('data-not-array'))
         }
       })
-      console.log(newdat, "newdata")
+      // console.log(newdat, "newdata")
       return newdat
     })
   }
@@ -199,9 +202,9 @@ abstract class BaseRepo {
   public repo_id?:number
   __URLFunctionFactory: (url:string) => any
   [k: string]: any
-  
+
   constructor(parent: AugurAPI){
-    this._host = parent._host || 'http://localhost:5002'
+    this._host = parent._host || 'http://localhost:5000'
     this._version = parent._version
     this.__URLFunctionFactory = parent.__URLFunctionFactory
     this.parent = parent
@@ -271,10 +274,10 @@ abstract class BaseRepo {
           data.forEach(response => {
             if (response.status === 200) {
               mapped[this.__reverseEndpointMap[response.path].name] = JSON.parse(response.response)
-              console.log('mapped:', mapped)
+              // console.log('mapped:', mapped)
             } else {
               mapped[this.__reverseEndpointMap[response.path].name] = null
-              console.log('mapped null:', mapped, this.__reverseEndpointMap[response.path])
+              // console.log('mapped null:', mapped, this.__reverseEndpointMap[response.path])
             }
           })
           resolve(mapped)
@@ -286,14 +289,13 @@ abstract class BaseRepo {
   }
 }
 
-
 class Repo extends BaseRepo{
   public rg_name?:string
   public repo_name?:string
   public url?:string
   constructor(parent: AugurAPI, metadata:{githubURL?: string, gitURL?: string, repo_id?: number, repo_group_id?: number, rg_name?:string, repo_name?:string}){
     super(parent)
-    console.log(metadata)
+    // console.log(metadata)
     this.gitURL = metadata.gitURL || undefined
     this.githubURL = metadata.githubURL || undefined
     this.repo_id = metadata.repo_id || undefined
@@ -388,7 +390,7 @@ class Repo extends BaseRepo{
       this.Timeseries('closedIssues', 'issues/closed')
       this.Timeseries('closedIssueResolutionDuration', 'issues/time_to_close')
       this.Timeseries( 'codeCommits', 'commits')
-      // Timeseries('codeReviews', 'code_reviews')
+      // this.Timeseries('codeReviews', 'code_reviews')
       this.Timeseries('codeReviewIteration', 'code_review_iteration')
       this.Timeseries('contributionAcceptance', 'contribution_acceptance')
       this.Endpoint('contributingGithubOrganizations', 'contributing_github_organizations')
@@ -400,6 +402,8 @@ class Repo extends BaseRepo{
       this.Timeseries('openIssues', 'issues')
       this.Timeseries('pullRequestComments', 'pulls/comments')
       this.Timeseries('pullRequestsOpen', 'pulls')
+
+      this.Timeseries('linesOfCodeCommitCountsByCalendarYearGrouped','lines-of-code-commit-counts-by-calendar-year-grouped')
 
       // RISK
 
@@ -446,7 +450,7 @@ class Repo extends BaseRepo{
   initialDBMetric(){
     this.addRepoMetric('codeChanges', 'code-changes')
     this.addRepoMetric('codeChangesLines', 'code-changes-lines')
-    this.addRepoMetric('issueNew', 'issues-new')
+    this.addRepoMetric('issuesNew', 'issues-new')
     this.addRepoMetric('issuesClosed', 'issues-closed')
     this.addRepoMetric('issueBacklog', 'issue-backlog')
     this.addRepoMetric('pullRequestsMergeContributorNew', 'pull-requests-merge-contributor-new')
@@ -465,8 +469,19 @@ class Repo extends BaseRepo{
     this.addRepoMetric('forkCount','fork-count')
     this.addRepoMetric('languages','languages')
     this.addRepoMetric('committers','committers')
+    this.addRepoMetric('licenseFiles','license-files')
     this.addRepoMetric('licenseDeclared','license-declared')
+    this.addRepoMetric('sbom','sbom-download')
+    this.addRepoMetric('ciiBP','cii-best-practices-badge')
     this.addRepoMetric('changesByAuthor', 'lines-changed-by-author')
+    this.addRepoMetric('pullRequestAcceptanceRate', 'pull-request-acceptance-rate')
+    this.addRepoMetric('topCommitters', 'top-committers')
+    this.addRepoMetric('reviews', 'reviews')
+    this.addRepoMetric('reviewsAccepted', 'reviews-accepted')
+    this.addRepoMetric('reviewsDeclined', 'reviews-declined')
+    this.addRepoMetric('reviewDuration', 'review-duration')
+    this.addRepoMetric('pullRequestAcceptanceRate', 'pull-request-acceptance-rate')
+    this.addRepoMetric('contributorsCodeDevelopment', 'contributors-code-development')
   }
 }
 
@@ -475,7 +490,7 @@ class RepoGroup extends BaseRepo {
   public rg_name?: string
   constructor(parent: AugurAPI, metadata:{rg_name?:any, repo_group_id?:number}){
     super(parent)
-    
+
     this.repo_group_id = metadata.repo_group_id || undefined
     this.rg_name = metadata.rg_name || null
     this.setup()
@@ -485,8 +500,8 @@ class RepoGroup extends BaseRepo {
   setup() {
     if (this.repo_group_id == null && this.rg_name) {
       this.retrieveGroupID()
-      this.initialMetric()
     }
+    this.initialMetric()
   }
 
   retrieveGroupID() {
@@ -508,7 +523,7 @@ class RepoGroup extends BaseRepo {
     if (this.repo_group_id) {
       this.addRepoGroupMetric('codeChanges', 'code-changes')
       this.addRepoGroupMetric('codeChangesLines', 'code-changes-lines')
-      this.addRepoGroupMetric('issueNew', 'issues-new')
+      this.addRepoGroupMetric('issuesNew', 'issues-new')
       this.addRepoGroupMetric('issuesClosed', 'issues-closed')
       this.addRepoGroupMetric('issueBacklog', 'issue-backlog')
       this.addRepoGroupMetric('pullRequestsMergeContributorNew','pull-requests-merge-contributor-new')
@@ -528,7 +543,13 @@ class RepoGroup extends BaseRepo {
       this.addRepoGroupMetric('languages','languages')
       this.addRepoGroupMetric('committers','committers')
       this.addRepoGroupMetric('licenseDeclared','license-declared')
-
+      this.addRepoGroupMetric('pullRequestAcceptanceRate', 'pull-request-acceptance-rate')
+      this.addRepoGroupMetric('topInsights', 'top-insights')
+      this.addRepoGroupMetric('changesByAuthor', 'lines-changed-by-author')
+      this.addRepoGroupMetric('annualCommitCountRankedByNewRepoInRepoGroup', 'annual-commit-count-ranked-by-new-repo-in-repo-group')
+      this.addRepoGroupMetric('annualLinesOfCodeCountRankedByRepoInRepoGroup', 'annual-lines-of-code-count-ranked-by-repo-in-repo-group')
+      this.addRepoGroupMetric('annualCommitCountRankedByNewRepoInRepoGroup', 'annual-commit-count-ranked-by-new-repo-in-repo-group')
+      this.addRepoGroupMetric('annualLinesOfCodeCountRankedByNewRepoInRepoGroup', 'annual-lines-of-code-count-ranked-by-new-repo-in-repo-group')
     }
   }
 }

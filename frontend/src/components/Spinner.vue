@@ -1,5 +1,6 @@
+<!-- #SPDX-License-Identifier: MIT -->
 <template>
-  <div style="margin: 0 auto;" class="sl-spinner" v-show="status" :style="spinnerStyle"></div>
+  <div class=" spinner sl-spinner" v-show="status" :style="spinnerStyle"></div>
 </template>
 
 <script lang="ts">

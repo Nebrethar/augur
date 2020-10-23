@@ -1,9 +1,13 @@
+// #SPDX-License-Identifier: MIT
 import axios from 'axios';
 import actions from './actions';
 import mutations from './mutations';
 import getters from './getters';
+var config = require('../../../../../augur.config.json')
 const AugurAPIModule = require('@/AugurAPI').default;
-const AugurAPI = new AugurAPIModule();
+var port = config['Frontend'] ? (config['Frontend']['port'] ? ':' + config['Frontend']['port'] : '') : (config['Server']['port'] ? ':' + config['Server']['port'] : '')
+var host = config['Frontend'] ? (config['Frontend']['host']) : (config['Server']['host'])
+const AugurAPI = new AugurAPIModule('http://' + host + port);
 
 const state = {
     baseRepo: '',

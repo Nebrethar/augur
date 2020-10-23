@@ -1,21 +1,50 @@
-matrix:
+#SPDX-License-Identifier: MIT
+os: linux
+dist: xenial
+language: python
+services:
+  - docker
+
+jobs:
   include:
-  - name: Python Datasource Unit Tests
-    install: pip install .
-    language: python
-    python: '3.6'
-    script: python -m pytest augur/datasources/**/test_**_functions.py
+    - name: Python v3.6 Unit Tests
+      python: 3.6
+      env: TOXENV=py36-workers,py36-application
 
-  - name: API Unit Tests
-    install: python setup.py install; pip install -e .
-    language: python
-    python: '3.6'
-    script:
-    - pip install zmq
-    - augur run > /dev/null 2>&1 &
-    - sleep 10
-    - python -m pytest augur/datasources/**/test_**_routes.py
+    - name: Python v3.6 API Tests
+      python: 3.6
+      env: TOXENV=py36-metric-routes
 
-notifications:
-  slack:
-    secure: s6aj/0sNAiktZdd6w9Z4EBxUcrg1Y9j9PZbo5CFDucRingXKkBTrkn301OrPT8WK2Yawu7Znhh/x3PuxWGIO5Qi02RCD9aEnW2WkMXwS5lhgxurc4ju+894WPrJIABYWXzVsB3/HMuRoVyU15o/l2NeD6hZ+Oro80OA+KUXK9006044B301qGIpv5j9JXRwcdTGS4i+qXBWDxWltgfCRl1icUhULfhV0DtaSGt0AkkDaLbDVnr6Wkz70EIjpGmkf+sfR7EnGZizrCatayechhNUWWbJHnY7Z//U266gOVZYUCUrkAwtM32pHrPUF4jHkHs/cY6C4i8OPya8tSp/KXdyvh4nvHsoOyiX89K0Q7Q7URSaM1BpCMqTP1H+l9zKJKYj+wRuB1Ybap4rPB+8vwZLVwnU/n8ekhHh7ZSsrSsqytjxWG4SegS+tn/Gi/9aAhc/UFPkBdVdYAzDmDv+wiUJVPe5svBvCJFlpuOGaN1AfOfWpgDTEIXHvop9tBfUw+bTrtNye0pMwnH6lr/5HON2z6Onw6DgH9E9qJOgPalikFllrCOJwblzQ4UPTB7Cncmddga9M4txBcggt0M8ByIeF8twe1T36ZTCU7Wr/yA9NHYIv/IXzDQdIbmEN1xCFc3w1M5qeIcef9B7Ce17f0loHvjwYO7ftzt71Rz4S3DA=
+    - name: Python v3.7 Unit Tests
+      python: 3.7
+      env: TOXENV=py37-workers,py36-application
+
+    - name: Python v3.7 API Tests
+      python: 3.7
+      env: TOXENV=py37-metric-routes
+
+    - name: Python v3.8 Unit Tests
+      python: 3.8
+      env: TOXENV=py38-workers,py36-application
+
+    - name: Python v3.8 API Tests
+      python: 3.8
+      env: TOXENV=py38-metric-routes
+
+env:
+  global:
+    AUGUR_DB_HOST=localhost
+    AUGUR_DB_NAME=test_data
+    AUGUR_DB_PORT=5432
+    AUGUR_DB_USER=augur
+    AUGUR_DB_PASSWORD=augur
+
+before_install:
+  - docker run -d -p 5432:5432 --name augur_test_database augurlabs/augur:test_data@sha256:fd2d9a178a9fee7cd548bd40a16e08d4611be22892491e817aafd53502f74cd0
+install:
+  - ./scripts/install/backend.sh
+  - ./scripts/install/workers.sh
+  - augur config init
+
+script:
+  - tox

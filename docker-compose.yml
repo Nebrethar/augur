@@ -1,26 +1,17 @@
- version: '3'
- services:
-   augur:
-     build: .
-     image: chaoss/augur
-     restart: always
-     volumes:
-       - .:/augur
-     ports:
-       - "80:80"
-     environment:
-       AUGUR_HOST:
-       AUGUR_PORT:
-       AUGUR_PUBLIC_WWW_API_KEY:
-       AUGUR_GITHUB_API_KEY:
-       AUGUR_LIBRARIESIO_API_KEY:
-       AUGUR_DB_USER:
-       AUGUR_DB_PASS:
-       AUGUR_DB_HOST:
-       AUGUR_DB_PORT:
-       AUGUR_DB_NAME:
-       AUGUR_GHTORRENT_PLUS_USER:
-       AUGUR_GHTORRENT_PLUS_PASS:
-       AUGUR_GHTORRENT_PLUS_HOST:
-       AUGUR_GHTORRENT_PLUS_PORT:
-       AUGUR_GHTORRENT_PLUS_NAME:
+#SPDX-License-Identifier: MIT
+version: '3'
+services:
+      backend:
+       image: augurlabs/augur:backend
+       restart: unless-stopped
+       ports:
+         - 5000:5000
+         - 50100-50800:50100-50800
+       env_file: docker_env.txt
+
+      frontend:
+        image: augurlabs/augur:frontend
+        restart: unless-stopped
+        ports:
+          - 8080:8080
+

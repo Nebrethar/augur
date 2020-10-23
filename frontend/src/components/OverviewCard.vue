@@ -1,23 +1,23 @@
+<!-- #SPDX-License-Identifier: MIT -->
 <template>
   <section>
-    <div style="display: inline-block;">
+    <div class="overviewCard">
       <h2
         v-if="loaded"
-        style="display: inline-block; color: black !important"
+        class="overviewCardHeader"
       >Project Overview: {{ project }}</h2>
       <p></p>
       <h2
-        style="display: inline-block;"
-        class="repolisting"
+        class="overviewCard repolisting"
         v-if="$store.state.comparedRepos.length > 0"
       >compared to:</h2>
-      <h2 style="display: inline-block;" v-for="(repo, index) in $store.state.comparedRepos">
+      <h2 class="overviewCard" v-for="(repo, index) in $store.state.comparedRepos">
         <span v-bind:style="{ 'color': colors[index] }" class="repolisting">{{ repo }}</span>
       </h2>
     </div>
 
-    <div class="row" style="transform: translateY(-50px) !important" v-if="loaded">
-      <div class="col col-6" style="padding-right: 35px">
+    <div class="row overviewCardDiv" v-if="loaded">
+      <div class="col col-6 overviewCardPadding">
         <grouped-bar-chart
           source="annualCommitCountRankedByRepoInRepoGroup"
           title="Top Repos in 2018 by Commits with Baseline Averages - Sorted"
@@ -25,7 +25,7 @@
           :data="values['annualCommitCountRankedByRepoInRepoGroup']"
         ></grouped-bar-chart>
       </div>
-      <div class="col col-6" style="padding-right: 35px">
+      <div class="col col-6 overviewCardPadding">
         <grouped-bar-chart
           source="annualLinesOfCodeCountRankedByRepoInRepoGroup"
           title="Top Repos in 2018 by Net LoC with Baseline Averages - Sorted"
@@ -33,7 +33,7 @@
           :data="values['annualLinesOfCodeCountRankedByRepoInRepoGroup']"
         ></grouped-bar-chart>
       </div>
-      <div class="col col-6" style="padding-right: 35px">
+      <div class="col col-6 overviewCardPadding">
         <grouped-bar-chart
           source="annualCommitCountRankedByNewRepoInRepoGroup"
           title="Top New Repos in 2018 by Commits with Baseline Averages - Sorted"
@@ -41,7 +41,7 @@
           :data="values['annualCommitCountRankedByNewRepoInRepoGroup']"
         ></grouped-bar-chart>
       </div>
-      <div class="col col-6" style="padding-right: 35px">
+      <div class="col col-6 overviewCardPadding">
         <grouped-bar-chart
           source="annualLinesOfCodeCountRankedByNewRepoInRepoGroup"
           title="Top New Repos in 2018 by Net LoC with Baseline Averages - Sorted"
@@ -54,14 +54,15 @@
 </template>
 
 <script>
-import AugurHeader from "./AugurHeader";
-import TickChart from "./charts/TickChart";
-import LinesOfCodeChart from "./charts/LinesOfCodeChart";
-import NormalizedStackedBarChart from "./charts/NormalizedStackedBarChart";
-import OneDimensionalStackedBarChart from "./charts/OneDimensionalStackedBarChart";
-import HorizontalBarChart from "./charts/HorizontalBarChart";
-import GroupedBarChart from "./charts/GroupedBarChart";
-import StackedBarChart from "./charts/StackedBarChart";
+import AugurHeader from "./AugurHeader"
+import TickChart from "./charts/TickChart"
+import LinesOfCodeChart from "./charts/LinesOfCodeChart"
+import NormalizedStackedBarChart from "./charts/NormalizedStackedBarChart"
+import OneDimensionalStackedBarChart from "./charts/OneDimensionalStackedBarChart"
+import HorizontalBarChart from "./charts/HorizontalBarChart"
+import GroupedBarChart from "./charts/GroupedBarChart"
+import StackedBarChart from "./charts/StackedBarChart"
+import TimeIntervalBarChart from './charts/TimeIntervalBarChart'
 export default {
   data() {
     return {
@@ -88,7 +89,8 @@ export default {
     OneDimensionalStackedBarChart,
     HorizontalBarChart,
     GroupedBarChart,
-    StackedBarChart
+    StackedBarChart,
+    TimeIntervalBarChart
   },
   computed: {
     repo() {

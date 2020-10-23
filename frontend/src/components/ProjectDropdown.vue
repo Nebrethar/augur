@@ -1,6 +1,7 @@
+<!-- #SPDX-License-Identifier: MIT -->
 <template>
    <section v-click-outside="">
-      <div style="display: inline-block;">
+      <div class="projectDropdown">
          <div class="cd-dropdown-wrapper">
       <a class="cd-dropdown-trigger"  @click="toggleNav" href="#0">{{ project }}</a>
       <nav class="cd-dropdown">
@@ -8,7 +9,7 @@
          <a href="#0" class="cd-close">Close</a>
          <ul class="cd-dropdown-content">
             <li>
-               <form style="margin: 0" class="cd-search">
+               <form class="projectDropdownForm cd-search">
                   <input type="search" placeholder="Search...">
                </form>
             </li>

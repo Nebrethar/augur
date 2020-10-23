@@ -43,7 +43,7 @@ from facade_worker.facade03analyzecommit import analyze_commit
 #   import pymysql
 # else:
 #   import MySQLdb
-    
+
 def analysis(cfg, multithreaded):
 
 # Run the analysis by looping over all active repos. For each repo, we retrieve
@@ -85,6 +85,8 @@ def analysis(cfg, multithreaded):
     for repo in repos:
         update_analysis_log(repo[0],'Beginning analysis')
         cfg.log_activity('Verbose','Analyzing repo: %s (%s)' % (repo[0],repo[3]))
+
+        cfg.inc_repos_processed()
 
         # First we check to see if the previous analysis didn't complete
 
@@ -145,6 +147,8 @@ def analysis(cfg, multithreaded):
 
         cfg.log_activity('Debug','Commits missing from repo %s: %s' %
             (repo[0],len(missing_commits)))
+
+## TODO: Verify if the multithreaded approach here is optimal for postgresql
 
         if multithreaded:
 

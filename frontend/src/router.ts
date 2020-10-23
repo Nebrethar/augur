@@ -1,3 +1,4 @@
+// #SPDX-License-Identifier: MIT
 // import Vue from 'vue';
 /* tslint:disable */
 import Vue from 'vue';
@@ -7,29 +8,16 @@ import store from '@/store/store';
 Vue.use(Router);
 import _ from 'lodash';
 
-var AugurAPIModule = require('@/AugurAPI').default;
-var AugurAPI = new AugurAPIModule();
-// import MetricsStatusCard from './components/MetricsStatusCard.vue';
-// import BaseRepoActivityCard from './components/BaseRepoActivityCard.vue';
-// import BaseRepoEcosystemCard  from './components/BaseRepoEcosystemCard.vue';
-// import GrowthMaturityDeclineCard from './components/GrowthMaturityDeclineCard.vue';
-// import RiskCard from './components/RiskCard.vue';
-// import ValueCard from './components/ValueCard.vue';
-// import DiversityInclusionCard from './components/DiversityInclusionCard.vue';
-// import GitCard from './components/GitCard.vue';
-// import OverviewCard from './components/OverviewCard.vue';
-// import ExperimentalCard from './components/ExperimentalCard.vue';
-// import DownloadedReposCard from './components/DownloadedReposCard.vue';
-// import LoginForm from './components/LoginForm.vue';
-// import AugurCards from './components/AugurCards.vue';
-// import MainControls from './components/MainControls.vue';
-// import AugurHeader from './components/AugurHeader.vue';
-// import Tabs from './components/Tabs.vue';
-// import TableView from './components/TableView.vue';
+var config = require('../../augur.config.json')
+const AugurAPIModule = require('@/AugurAPI').default;
+var port = config['Frontend'] ? (config['Frontend']['port'] ? ':' + config['Frontend']['port'] : '') : (config['Server']['port'] ? ':' + config['Server']['port'] : '')
+var host = config['Frontend'] ? (config['Frontend']['host']) : (config['Server']['host'])
+const AugurAPI = new AugurAPIModule('http://' + host + port);
 
 import Errors from './views/Errors.vue';
 import Tables from './views/Tables.vue';
 import Dashboard from './views/Dashboard.vue';
+import EditConfig from './views/EditConfig.vue';
 import Default from './layouts/Default.vue';
 import MainSidebar from './components/layout/MainSidebar/MainSidebar.vue';
 import MainNavbar from './components/layout/MainNavbar/MainNavbar.vue';
@@ -38,12 +26,16 @@ import GroupOverview from './views/GroupOverview.vue';
 import RepoGroups from './views/RepoGroups.vue';
 import Repos from './views/Repos.vue';
 import SingleComparison from './views/SingleComparison.vue';
+import Workers from './views/Workers.vue';
+import ExploreInsights from './views/ExploreInsights.vue';
+import InspectInsight from './views/InspectInsight.vue';
 import RiskMetrics from "@/views/RiskMetrics.vue";
 import NProgress from "nprogress";
+import SlackConfig from './views/SlackConfig.vue';
 
 const routes = [
   {
-    path: '/',
+    path: '/insights',
     component: Default,
     children: [
       {
@@ -58,7 +50,22 @@ const routes = [
     ],
   },
   {
-    path: '/repo_groups',
+    path: '/slack-config',
+    component: Default,
+    children: [
+      {
+        path: '',
+        name: 'slack_config',
+        components: {
+          sidebar: MainSidebar,
+          navbar: MainNavbar,
+          content: SlackConfig,
+        },
+      },
+    ],
+  },
+  {
+    path: '/', //repo_groups
     component: Default,
     children: [
       {
@@ -82,7 +89,7 @@ const routes = [
         components: {
           sidebar: MainSidebar,
           navbar: MainNavbar,
-          content: Tables,
+          content: Workers,
         },
       },
     ],
@@ -102,19 +109,49 @@ const routes = [
       },
     ],
   },
+  // {
+  //   path: '/insights',
+  //   component: Default,
+  //   children: [
+  //     {
+  //       path: '',
+  //       name: 'insights',
+  //       components: {
+  //         sidebar: MainSidebar,
+  //         navbar: MainNavbar,
+  //         content: ExploreInsights,
+  //       },
+  //     },
+  //   ],
+  // },
   {
-    path: '/insights',
+    path: '/config',
     component: Default,
     children: [
       {
         path: '',
-        name: 'insights',
+        name: 'config',
         components: {
           sidebar: MainSidebar,
           navbar: MainNavbar,
-          content: Tables,
+          content: EditConfig,
         },
       },
+    ],
+  },
+  {
+    path: '/inspect_insight/:group/:repo/:metric',
+    component: Default,
+    children: [
+      {
+        path: '',
+        name: 'inspect_insight',
+        components: {
+          sidebar: MainSidebar,
+          navbar: MainNavbar,
+          content: InspectInsight,
+        },
+      }
     ],
   },
   {
@@ -146,12 +183,12 @@ const routes = [
     component: Default,
     children: [
       {
-        path: 'overview',
+        path: '',
         name: 'repo_overview_compare',
         components: {
           sidebar: MainSidebar,
           navbar: MainNavbar,
-          content: RepoOverview,
+          content: SingleComparison,
         },
       },
       {
@@ -190,7 +227,7 @@ const routes = [
         components: {
           sidebar: MainSidebar,
           navbar: MainNavbar,
-          content: GroupOverview,
+          content: SingleComparison,
         },
       },
     ],

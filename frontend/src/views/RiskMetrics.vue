@@ -1,6 +1,7 @@
+<!-- #SPDX-License-Identifier: MIT -->
 <template>
   <d-container fluid class="main-content-container px-4">
-    <d-breadcrumb style="margin:0; padding-top: 26px; padding-left: 0px">
+    <d-breadcrumb class="riskMetrics">
       <d-breadcrumb-item :active="false" :text="base.rg_name" href="#" />
       <d-breadcrumb-item :active="true" :text="base.repo_name" href="#" />
     </d-breadcrumb>
@@ -10,31 +11,75 @@
     <div class="page-header row no-gutters py-4" >
       <div class="col-12 col-sm-4 text-center text-sm-left mb-0">
         <!-- <span class="text-uppercase page-subtitle">Components</span> -->
-        <h3 class="page-title" style="font-size: 1rem">Risk</h3>
+        <h3 class="page-title riskMetricsHeader">Risk</h3>
       </div>
     </div>
 
-    <div class="row mb-5" v-if="loaded_rsik_1">
-      <div class="col-3">
-        <count-block title="Forks" :data="values1" source="forkCount" field="forks"></count-block>
-      </div>
-    </div>
-
-    <div class="row mb-5" v-if="loaded_rsik_2">
+    <div class="row mb-5">
       <div class="col-6">
-        <line-chart title="Forks Count by Week" :data="values2" source="getForks" filedTime="date" fieldCount="forks">
+        <line-chart
+          title="Forks Count by Week"
+          source="getForks"
+          filedTime="date"
+          fieldCount="forks">
         </line-chart>
       </div>
       <div class="col-6">
-        <line-chart title="Committers by week" :data="values2" source="committers" filedTime="date"
-                    fieldCount="count"></line-chart>
+        <line-chart
+          title="Committers by week"
+          source="committers"
+          filedTime="date"
+          fieldCount="count"
+        ></line-chart>
       </div>
     </div>
 
-    <div class="row mb-5" v-if="loaded_rsik_1">
+    <div class="row mb-5">
       <div class="col-6">
-        <license-table :data="values1" source="licenseDeclared"  :headers="['Short Name','Note']"
-                       :fields="['short_name','note']"  title="License Declared"></license-table>
+        <license-table
+          source="licenseDeclared"
+          :headers="['Short Name', 'Count']"
+          :ldata="licenses"
+          :fields="['short_name']"
+          title="License Declared">
+        </license-table>
+        <br><br>
+        <download-card
+          v-if="loaded_sbom"
+          title="SPDX Document"
+          :data="values"
+          source="sbom">
+        </download-card>
+      </div>
+      <div class="col-6">
+        <cii-table
+          source="ciiBP"
+          :headers="['Passing Status','Badge Level', 'Date']"
+          :fields="['name', 'achieve_passing_status', 'badge_level', 'date']"
+          title="CII Best Practices"
+        ></cii-table>
+        <br> <br>
+        <count-block
+          title="Forks"
+          source="forkCount"
+          field="forks"
+        ></count-block>
+        <br><br>
+        <coverage-card
+          title="License Coverage"
+          source="sbom"
+          sourcetwo="licenseDeclared"
+        ></coverage-card>
+        <br><br>
+        <osi-card
+          source="licenseDeclared"
+          :headers="['Short Name', 'Count']"
+          :ldata="licenses"
+          :fields="['short_name']"
+          title="Percent OSI-Approved Licenses by File">
+        </osi-card>
+      </div>
+
       </div>
     </div>
 
@@ -51,7 +96,12 @@
   import CountBlock from "@/components/charts/CountBlock.vue";
   import LineChart from "@/components/charts/LineChart.vue";
   import LicenseTable from "@/components/charts/LicenseTable.vue";
+  import CiiTable from "@/components/charts/CiiTable.vue";
+  import DownloadCard from "@/components/charts/DownloadCard.vue";
+  import CoverageCard from "@/components/charts/CoverageCard.vue";
+  import OsiCard from "@/components/charts/OsiCard.vue";
   // import PieChart from "@/components/charts/PieChart.vue";
+  import Licenses from "@/components/Licenses.json";
   import router from "@/router";
 
   @Component({
@@ -62,6 +112,10 @@
       CountBlock,
       LineChart,
       LicenseTable,
+      CiiTable,
+      DownloadCard,
+      CoverageCard,
+      OsiCard
       // PieChart,
     },
     methods: {
@@ -85,40 +139,54 @@
     projects = []
     themes = ['dark', 'info', 'royal-blue', 'warning']
     project = null
+    licenses = Licenses
 
-    loaded_rsik_1:boolean = false;
-    loaded_rsik_2:boolean = false;
+    loaded_cii:boolean = false
+    loaded_sbom:boolean = false
 
-    values1 = {}
-    values2 = {}
+    values:any = {}
 
     // deflare vuex action, getter, mutations
     groupsInfo!: any;
     getRepoGroups!: any;
     repo_groups!: any[];
-    sorted_repo_groups!: any[];
+    sortedRepoGroups!: any[];
     base!: any;
     // actions
     endpoint!: any;
 
 
     // endpoints
-    risk_endpoints_1 = ['forkCount','licenseDeclared']
-
-    risk_endpoints_2 = ['getForks', 'committers']
+    cii_endpoint = ['ciiBP']
+    sbom_endpoint = ['sbom']
 
     created() {
-      this.endpoint({endpoints:this.risk_endpoints_1,repos:[this.base]}).then((tuples:any) => {
-        this.values1 = tuples;
-        this.loaded_rsik_1 = true
+      console.log('####', this.base)
+      let ref = this.base.url || this.base.repo_name
+      this.endpoint({endpoints:this.sbom_endpoint,repos:[this.base]}).then((tuples:any) => {
+        Object.keys(tuples[ref]).forEach((endpoint) => {
+
+          this.values[endpoint] = tuples[ref][endpoint]
+          console.log("sbom data loaded", endpoint, ref, tuples)
+        })
+        this.loaded_sbom = true
       })
-      this.endpoint({endpoints:this.risk_endpoints_2,repos:[this.base]}).then((tuples:any) => {
-        this.values2 = tuples;
-        this.loaded_rsik_2 = true
+      this.endpoint({endpoints:this.cii_endpoint,repos:[this.base]}).then((tuples:any) => {
+        Object.keys(tuples[ref]).forEach((endpoint) => {
+          this.values[endpoint] = tuples[ref][endpoint]
+          console.log("cii data loaded", endpoint, ref, tuples)
+        })
+        this.loaded_cii = true
       })
 
     }
 
+    onTab(e: any) {
+      console.log("onTab", e.target.value)
+      this.$router.push({
+        name: e.target.value, params: {repo: this.base.repo_name, group: this.base.rg_name}
+      })
+    }
+
   }
 </script>
-
